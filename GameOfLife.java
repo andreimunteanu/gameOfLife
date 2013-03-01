@@ -8,27 +8,33 @@ public class GameOfLife extends JFrame {
 	private Vector<Cell> actualGen = new Vector<Cell>();
 	private Vector<Cell> newGen = new Vector<Cell>();
 	private Vector<Cell> deadCells = new Vector<Cell>();
-	private static Cell[][] cells;
+	private Cell[][] cells;
 	private Integer workingPos = 0;
 	static int size;
 	public GameOfLife(){
 		super("Game of Life");
+		size = SIZE_1;
+		initFrame();
 		init();
 	}
 
 	private void initCells(){
 		cells = new Cell[size][size];
 		for(int i = 0;i < size;i++ )
-			for(int j = 0;j < size;j++)
+			for(int j = 0;j < size;j++){
 				cells[i][j] = new LivingCell(i,j);
+				System.out.println("CIAO");
+			}
 	}
 	private void initFrame(){
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		getContentPane().setLayout(null);
-		int xSize = 15*size;
-		int ySize = 15*size;
+		int xSize = 15 * size;
+		int ySize = 15 * size;
 		setSize(xSize,ySize);
-		setResizable(false);
+		setResizable(true);
+		
+	
 		addCellsToFrame();
 		setVisible(true);
 	}
@@ -36,7 +42,7 @@ public class GameOfLife extends JFrame {
 	private void addCellsToFrame() {
 		for(Cell[] column : cells){
 			for(Cell cell : column){
-				setBounds(cell.getY() * Cell.CELL_SIZE, cell.getX() * Cell.CELL_SIZE,
+				cell.setBounds(cell.getY() * Cell.CELL_SIZE, cell.getX() * Cell.CELL_SIZE,
 							Cell.CELL_SIZE, Cell.CELL_SIZE);
 				getContentPane().add(cell);
 			}

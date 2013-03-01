@@ -1,5 +1,3 @@
-package it.univr.GameOfLife;
-
 import javax.swing.JButton;
 
 public class Cell extends JButton{
@@ -17,9 +15,12 @@ public class Cell extends JButton{
 	public int getY(){
 		return y;
 	}
-	
+
 	public Cell(int x, int y){
 		this.x = x;
 		this.y = y;
-	}	
+	}
+	public void setState(boolean state ){
+		this.state = state; 
+	}
 }

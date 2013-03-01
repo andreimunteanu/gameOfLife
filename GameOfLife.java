@@ -13,17 +13,35 @@ public class GameOfLife extends JFrame {
 	private boolean firstTime = true;
 	static int size;
 	public GameOfLife(){
+		super("Game of Life");
 		init();
+	}
+	
+	private void initCells(){
+		cells = new Cell[size][size];
+		for(int i = 0;i < size;i++ )
+			for(int j = 0;j < size;j++)
+				cells[i][j] = new Cell(i,j);
+	}
+	private void initFrame(){
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		getContentPane().setLayout(null);
+		int xSize = 15*size;
+		int ySize = 15*size;
+		setSize(xSize,ySize);
+		setResizable(false);
+		setVisible(true);
+		
 	}
 	private void init(){
 		size = SIZE_1;
 		int coreN = Runtime.getRuntime().availableProcessors();
 		Generator[] generators = new Generator[coreN];
 		Terminator[] terminators = new Terminator[coreN];
-		cells = new Cell[size][size];
-		for(int i = 0;i < size;i++ )
-			for(int j = 0;j < size;j++)
-				cells[i][j] = new Cell(i,j);
+		
+		initCells();
+		initFrame();
+		
 
 		while(true){
 			for(int i = 0; i < coreN; i++){
@@ -33,7 +51,7 @@ public class GameOfLife extends JFrame {
 			newGeneration(generators,terminators, coreN);
 		}
 	}
-	private void upDate(int index){
+	private void upDate(int index){//race condition
 
 		if(countAliveNeighbors(actualGen.get(index)) == 2 || countAliveNeighbors(actualGen.get(index)) == 3)
 			newGen.add(actualGen.get(index));

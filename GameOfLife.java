@@ -25,12 +25,11 @@ public class GameOfLife extends JFrame {
 			for(int j = 0;j < size;j++)
 				cells[i][j] = new Cell(i,j);
 
-		for(int i = 0; i < coreN; i++){
-			generators[i] = new Generator();
-			terminators[i] = new Terminator();
-		}
-
 		while(true){
+			for(int i = 0; i < coreN; i++){
+				generators[i] = new Generator();
+				terminators[i] = new Terminator();
+			}
 			newGeneration(generators,terminators, coreN);
 		}
 	}
@@ -44,14 +43,8 @@ public class GameOfLife extends JFrame {
 	}
 	private void newGeneration(Generator[] generators,Terminator[] terminators, int coreN){
 
-		for(int i = 0; i < coreN; i++){
-			if(firstTime){
+		for(int i = 0; i < coreN; i++)
 				generators[i].start();
-			}
-
-			else
-				generators[i].notify();
-		}
 		
 		for(int i = 0; i < coreN; i++){
 			try {
@@ -62,38 +55,15 @@ public class GameOfLife extends JFrame {
 			}
 		}
 
-		for(int i = 0; i < coreN; i++){
-			try {
-				generators[i].wait();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
 		actualGen = newGen;
 		newGen.clear();
 		workingPos = 0;
 		for(int i = 0; i < coreN; i++)
-			if(firstTime){
 				terminators[i].start();
-				if(i==coreN-1)
-					firstTime=false;
-			}
-			else
-				terminators[i].notify();
 
 		for(int i = 0; i < coreN; i++){
 			try {
 				generators[i].join();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-
-		for(int i = 0; i < coreN; i++){
-			try {
-				terminators[i].wait();
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -122,12 +92,10 @@ public class GameOfLife extends JFrame {
 		public void run(){
 			while(true){
 				synchronized (workingPos){
-
 					if(workingPos<deadCells.size())
 						i=workingPos++;	
 					else 
 						return;
-
 				}
 
 				killCell(i);

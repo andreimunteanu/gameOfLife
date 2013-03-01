@@ -1,3 +1,4 @@
+import java.awt.Color;
 import java.util.Vector;
 
 import javax.swing.JFrame;
@@ -14,51 +15,24 @@ public class GameOfLife extends JFrame {
 	public GameOfLife(){
 		super("Game of Life");
 		size = SIZE_1;
-		initFrame();
+		//	initFrame();
 		init();
 	}
 
 	private void initCells(){
 		cells = new Cell[size][size];
 		for(int i = 0;i < size;i++ )
-			for(int j = 0;j < size;j++){
+			for(int j = 0;j < size;j++)
 				cells[i][j] = new LivingCell(i,j);
-				System.out.println("CIAO");
-			}
 	}
-	private void initFrame(){
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		getContentPane().setLayout(null);
-		int xSize = 15 * size;
-		int ySize = 15 * size;
-		setSize(xSize,ySize);
-		setResizable(true);
-		
-	
-		addCellsToFrame();
-		setVisible(true);
-	}
-
-	private void addCellsToFrame() {
-		for(Cell[] column : cells){
-			for(Cell cell : column){
-				cell.setBounds(cell.getY() * Cell.CELL_SIZE, cell.getX() * Cell.CELL_SIZE,
-							Cell.CELL_SIZE, Cell.CELL_SIZE);
-				getContentPane().add(cell);
-			}
-		}
-	}
-
 	private void init(){
 		size = SIZE_1;
 		int coreN = Runtime.getRuntime().availableProcessors();
 		Generator[] generators = new Generator[coreN];
 		Terminator[] terminators = new Terminator[coreN];
 
-		initCells();
 		initFrame();
-
-
+		/*
 		while(true){
 			for(int i = 0; i < coreN; i++){
 				generators[i] = new Generator();
@@ -67,6 +41,38 @@ public class GameOfLife extends JFrame {
 			newGeneration(generators,terminators, coreN);
 			addCellsToFrame();
 		}
+		 */
+	}
+	private void initFrame(){
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		getContentPane().setLayout(null);
+		int xSize = Cell.CELL_SIZE * size;
+		int ySize = Cell.CELL_SIZE * size;
+		setSize(xSize,ySize);
+		setResizable(false);
+
+		initCells();
+		/*cells[0][0].setBounds(0 * Cell.CELL_SIZE, 0 * Cell.CELL_SIZE,
+				Cell.CELL_SIZE, Cell.CELL_SIZE);
+		cells[0][0].setBackground(Color.BLUE);
+		this.getContentPane().add(cells[0][0]);
+		cells[1][1].setBounds(20, 20,
+				20, 20);
+		cells[1][1].setBackground(Color.BLUE);
+		this.getContentPane().add(cells[1][1]);*/
+		addCellsToFrame();
+		setVisible(true);
+	}
+
+	private void addCellsToFrame() {
+		for(int i = 0;i < size;i++)
+			for(int j = 0;j < size;j++){
+				//cells[i][j].setBounds(i * Cell.CELL_SIZE, j * Cell.CELL_SIZE,
+						//Cell.CELL_SIZE, Cell.CELL_SIZE);
+				//cells[i][j].setBackground(Color.BLUE);
+				this.getContentPane().add(cells[i][j]);
+			}
+
 	}
 	private void upDate(int index){//race condition
 

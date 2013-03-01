@@ -10,25 +10,28 @@ public class GameOfLife extends JFrame {
 	private Vector<Cell> deadCells = new Vector<Cell>();
 	private static Cell[][] cells;
 	private Integer workingPos = 0;
+	private boolean firstTime = true;
 	static int size;
-	private boolean cleanUp = false;
 	public GameOfLife(){
 		init();
 	}
 	private void init(){
 		size = SIZE_1;
 		int coreN = Runtime.getRuntime().availableProcessors();
-		Slave[] slaves = new Slave[coreN];
+		Generator[] generators = new Generator[coreN];
+		Terminator[] terminators = new Terminator[coreN];
 		cells = new Cell[size][size];
 		for(int i = 0;i < size;i++ )
 			for(int j = 0;j < size;j++)
 				cells[i][j] = new Cell(i,j);
 
-		for(int i = 0; i < coreN; i++)
-			slaves[i] = new Slave();
+		for(int i = 0; i < coreN; i++){
+			generators[i] = new Generator();
+			terminators[i] = new Terminator();
+		}
 
 		while(true){
-			newGeneration(slaves, coreN);
+			newGeneration(generators,terminators, coreN);
 		}
 	}
 	private void upDate(int index){
@@ -39,33 +42,63 @@ public class GameOfLife extends JFrame {
 		else
 			deadCells.add(actualGen.get(index));
 	}
-	private void newGeneration(Slave[] slaves, int coreN){
+	private void newGeneration(Generator[] generators,Terminator[] terminators, int coreN){
 
-		for(int i = 0; i < coreN; i++)
-			slaves[i].start();
+		for(int i = 0; i < coreN; i++){
+			if(firstTime){
+				generators[i].start();
+			}
 
-		for(int i = 0; i < coreN; i++)
+			else
+				generators[i].notify();
+		}
+		
+		for(int i = 0; i < coreN; i++){
 			try {
-				slaves[i].join();
+				generators[i].join();
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
+		}
 
-			actualGen = newGen;
-			newGen.clear();
-			workingPos = 0;
-			cleanUp = true;
-			for(int i = 0; i < coreN; i++)
-				slaves[i].start();
+		for(int i = 0; i < coreN; i++){
+			try {
+				generators[i].wait();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		actualGen = newGen;
+		newGen.clear();
+		workingPos = 0;
+		for(int i = 0; i < coreN; i++)
+			if(firstTime){
+				terminators[i].start();
+				if(i==coreN-1)
+					firstTime=false;
+			}
+			else
+				terminators[i].notify();
 
-			for(int i = 0; i < coreN; i++)
-				try {
-					slaves[i].join();
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+		for(int i = 0; i < coreN; i++){
+			try {
+				generators[i].join();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		for(int i = 0; i < coreN; i++){
+			try {
+				terminators[i].wait();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 	private int countAliveNeighbors(Cell cell) {
 		int x = cell.getX();
@@ -84,37 +117,40 @@ public class GameOfLife extends JFrame {
 	public static void main(String[] args) {
 		new GameOfLife();
 	}
-	private class Slave extends Thread{
+	private class Terminator extends Thread{
 		int i;
 		public void run(){
 			while(true){
-				if(!cleanUp){
-					synchronized (workingPos){
+				synchronized (workingPos){
 
-						if(workingPos<actualGen.size())
-							i=workingPos++;	
-						else 
-							return;
+					if(workingPos<deadCells.size())
+						i=workingPos++;	
+					else 
+						return;
 
-					}
-
-					upDate(i);//potrebbe esserci race condition nelle variabile newGen e deadCells sicuramente
 				}
-				else{
-					synchronized (workingPos){
 
-						if(workingPos<actualGen.size())
-							i=workingPos++;	
-						else 
-							return;
+				killCell(i);
+			}
+		}
+	}
+	private class Generator extends Thread{
+		int i;
+		public void run(){
+			while(true){
+				synchronized (workingPos){
 
-					}
-					killCell(i);
+					if(workingPos<actualGen.size())
+						i=workingPos++;	
+					else 
+						return;
+
 				}
+
+				upDate(i);//potrebbe esserci race condition nelle variabile newGen e deadCells sicuramente
+
 
 			}
 		}
-
-
 	}
 }

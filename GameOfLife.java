@@ -23,7 +23,7 @@ public class GameOfLife extends JFrame {
 		cells = new Cell[size][size];
 		for(int i = 0;i < size;i++ )
 			for(int j = 0;j < size;j++)
-				cells[i][j] = new LivingCell(i,j);
+				cells[i][j] = new DeadCell(i,j);
 	}
 	private void init(){
 		size = SIZE_1;
@@ -32,16 +32,25 @@ public class GameOfLife extends JFrame {
 		Terminator[] terminators = new Terminator[coreN];
 
 		initFrame();
-		/*
-		while(true){
+		for(int i=0; i<size; i++)
+			for(int j=0; j<size;j++){
+				getContentPane().remove(cells[i][j]);
+				cells[i][j] = new LivingCell(i,j);
+				getContentPane().add(cells[i][j]);
+				//for(int h=0; h<1000000000; h++);				
+			}
+		getContentPane().repaint();
+				
+		/*while(true){
 			for(int i = 0; i < coreN; i++){
 				generators[i] = new Generator();
 				terminators[i] = new Terminator();
 			}
 			newGeneration(generators,terminators, coreN);
 			addCellsToFrame();
-		}
-		 */
+			
+		}*/
+		
 	}
 	private void initFrame(){
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

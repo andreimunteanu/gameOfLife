@@ -1,4 +1,6 @@
 import java.awt.Color;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Vector;
 
 import javax.swing.JFrame;
@@ -8,7 +10,10 @@ public class GameOfLife extends JFrame {
 	private final long serialVersionUID = 1L;
 	private Vector<Cell> actualGen = new Vector<Cell>();
 	private Vector<Cell> newGen = new Vector<Cell>();
-	private Vector<Cell> deadCells = new Vector<Cell>();
+	private Vector<Cell> deadCells = new Vector<Cell>(); //da fare cambio di stato nel frame
+	private Set<Cell> posibleFuturegenration = new HashSet(); //lista con cellule per la generazione futura non tutte ne fanno parte
+															// quelle che cambiano stato n.b c'è da fare il cambio di stato nel frame			
+															// forse c'è un alternativa. vado a dormire ciao.
 	private Cell[][] cells;
 	private Integer workingPos = 0;
 	static int size;
@@ -37,7 +42,6 @@ public class GameOfLife extends JFrame {
 				getContentPane().remove(cells[i][j]);
 				cells[i][j] = new LivingCell(i,j);
 				getContentPane().add(cells[i][j]);
-				//for(int h=0; h<1000000000; h++);				
 			}
 		getContentPane().repaint();
 				
@@ -61,14 +65,7 @@ public class GameOfLife extends JFrame {
 		setResizable(false);
 
 		initCells();
-		/*cells[0][0].setBounds(0 * Cell.CELL_SIZE, 0 * Cell.CELL_SIZE,
-				Cell.CELL_SIZE, Cell.CELL_SIZE);
-		cells[0][0].setBackground(Color.BLUE);
-		this.getContentPane().add(cells[0][0]);
-		cells[1][1].setBounds(20, 20,
-				20, 20);
-		cells[1][1].setBackground(Color.BLUE);
-		this.getContentPane().add(cells[1][1]);*/
+		
 		addCellsToFrame();
 		setVisible(true);
 	}
@@ -76,9 +73,6 @@ public class GameOfLife extends JFrame {
 	private void addCellsToFrame() {
 		for(int i = 0;i < size;i++)
 			for(int j = 0;j < size;j++){
-				//cells[i][j].setBounds(i * Cell.CELL_SIZE, j * Cell.CELL_SIZE,
-						//Cell.CELL_SIZE, Cell.CELL_SIZE);
-				//cells[i][j].setBackground(Color.BLUE);
 				this.getContentPane().add(cells[i][j]);
 			}
 
@@ -128,6 +122,12 @@ public class GameOfLife extends JFrame {
 			for(int j = -1;j < 2;j++)
 				if((i != 0 || j != 0) && cells[Math.abs(i + x) % (size-1)][Math.abs(j + y) % (size-1)] instanceof LivingCell)
 					count++;
+				else if(i != 0 || j != 0){
+					cells[Math.abs(i + x) % (size-1)][Math.abs(j + y) % (size-1)].incrementNumbOfN();
+					if(cells[Math.abs(i + x) % (size-1)][Math.abs(j + y) % (size-1)].getNumbOfN()==3)
+						posibleFuturegenration.add(cells[Math.abs(i + x) % (size-1)][Math.abs(j + y) % (size-1)]);
+				}
+					
 		return count;
 	}
 

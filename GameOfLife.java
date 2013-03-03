@@ -11,7 +11,7 @@ public class GameOfLife extends JFrame {
 	private Vector<Cell> actualGen = new Vector<Cell>();
 	private Vector<Cell> newGen = new Vector<Cell>();
 	private Vector<Cell> deadCells = new Vector<Cell>(); //da fare cambio di stato nel frame
-	private Set<Cell> posibleFuturegenration = new HashSet(); //lista con cellule per la generazione futura non tutte ne fanno parte
+	private Set<Cell> possibleFutureGeneration = new HashSet(); //lista con cellule per la generazione futura non tutte ne fanno parte
 															// quelle che cambiano stato n.b c'è da fare il cambio di stato nel frame			
 															// forse c'è un alternativa. vado a dormire ciao.
 	private Cell[][] cells;
@@ -30,6 +30,7 @@ public class GameOfLife extends JFrame {
 			for(int j = 0;j < size;j++)
 				cells[i][j] = new DeadCell(i,j);
 	}
+	
 	private void init(){
 		size = SIZE_1;
 		int coreN = Runtime.getRuntime().availableProcessors();
@@ -93,23 +94,22 @@ public class GameOfLife extends JFrame {
 			try {
 				generators[i].join();
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.err.println("Error in newGeneration(generators) => " + e.getMessage());
 			}
 		}
 
 		actualGen = newGen;
 		newGen.clear();
 		workingPos = 0;
+		
 		for(int i = 0; i < coreN; i++)
 			terminators[i].start();
 
 		for(int i = 0; i < coreN; i++){
 			try {
-				generators[i].join();
+				terminators[i].join();
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				System.err.println("Error in newGeneration(terminators) => " + e.getMessage());
 			}
 		}
 	}
@@ -125,7 +125,7 @@ public class GameOfLife extends JFrame {
 				else if(i != 0 || j != 0){
 					cells[Math.abs(i + x) % (size-1)][Math.abs(j + y) % (size-1)].incrementNumbOfN();
 					if(cells[Math.abs(i + x) % (size-1)][Math.abs(j + y) % (size-1)].getNumbOfN()==3)
-						posibleFuturegenration.add(cells[Math.abs(i + x) % (size-1)][Math.abs(j + y) % (size-1)]);
+						possibleFutureGeneration.add(cells[Math.abs(i + x) % (size-1)][Math.abs(j + y) % (size-1)]);
 				}
 					
 		return count;

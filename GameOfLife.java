@@ -1,9 +1,13 @@
 import java.awt.Color;
+import java.awt.Dimension;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
 
 import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 
 public class GameOfLife extends JFrame {
 
@@ -16,7 +20,7 @@ public class GameOfLife extends JFrame {
 	private Vector<Cell> actualGeneration = new Vector<Cell>();
 	private Vector<Cell> newGeneration = new Vector<Cell>();
 	private Vector<Cell> toTerminateCells = new Vector<Cell>(); //da fare cambio di stato nel frame
-	private Vector<Cell> possibleFutureGenration = new Vector<Cell>(); //lista con cellule per la generazione futura non tutte ne fanno parte
+	private Vector<Cell> possibleFutureGeneration = new Vector<Cell>(); //lista con cellule per la generazione futura non tutte ne fanno parte
 	// quelle che cambiano stato n.b c'è da fare il cambio di stato nel frame			
 	// forse c'è un alternativa. vado a dormire ciao.
 
@@ -35,10 +39,12 @@ public class GameOfLife extends JFrame {
 
 		for(int i=0; i<size; i++)
 			for(int j=0; j<size;j++){
-				getContentPane().remove(cells[i][j]);
+				
+				//getContentPane().remove(cells[i][j]); //causa eccezione
 				cells[i][j] = new LivingCell(i,j);
 				getContentPane().add(cells[i][j]);
 			}
+		
 		getContentPane().repaint();
 
 		/*while(true){ //dovra diventare while(play()) un metodo che permetta di fermare il gioco quando vine schiacciato un bottone
@@ -55,13 +61,26 @@ public class GameOfLife extends JFrame {
 	private void initFrame(){
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		getContentPane().setLayout(null);
-		int xSize = Cell.CELL_SIZE * size;
-		int ySize = Cell.CELL_SIZE * size;
+		int xSize = (Cell.CELL_SIZE * size);
+		int ySize = (Cell.CELL_SIZE * size) + Cell.CELL_SIZE * 8;
 		setSize(xSize,ySize);
 		setResizable(false);
 		initCells();
 		addCellsToFrame();
+		initMenu();
 		setVisible(true);
+	}
+
+	private void initMenu() {
+		JMenuBar menu = new JMenuBar();
+		menu.setOpaque(true);
+		menu.setBackground(Color.WHITE);
+		menu.setPreferredSize(new Dimension(0,20));
+		JMenu file = new JMenu("File");
+		JMenuItem exit = new JMenuItem("Exit");
+		file.add(exit);
+		menu.add(file);
+		setJMenuBar(menu);
 	}
 
 	private void initCells(){
@@ -74,7 +93,7 @@ public class GameOfLife extends JFrame {
 	private void addCellsToFrame() {
 		for(int i = 0;i < size;i++)
 			for(int j = 0;j < size;j++){
-				this.getContentPane().add(cells[i][j]);
+				getContentPane().add(cells[i][j]);
 			}
 
 	}
@@ -143,8 +162,8 @@ public class GameOfLife extends JFrame {
 					count++;
 				else if(i != 0 || j != 0){
 					neighborCell.incrementNumbOfN();
-					if(neighborCell.getNumbOfN()==3)
-						possibleFutureGenration.add(neighborCell);
+					if(neighborCell.getNumbOfN() == 3)
+						possibleFutureGeneration.add(neighborCell);
 				}
 			}
 

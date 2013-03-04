@@ -77,9 +77,20 @@ public class GameOfLife extends JFrame {
 		menu.setBackground(Color.WHITE);
 		menu.setPreferredSize(new Dimension(0,20));
 		JMenu file = new JMenu("File");
+		JMenu size = new JMenu("Size");
+		JMenu edit = new JMenu("Edit");
 		JMenuItem exit = new JMenuItem("Exit");
+		JMenuItem size1 = new JMenuItem("50 x 50");
+		JMenuItem size2 = new JMenuItem("100 x 100");
+		JMenuItem size3 = new JMenuItem("200 x 200");
+		edit.add(size);
+		size.add(size1);
+		size.add(size2);
+		size.add(size3);
+		file.addSeparator();
 		file.add(exit);
 		menu.add(file);
+		menu.add(edit);
 		setJMenuBar(menu);
 	}
 

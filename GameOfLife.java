@@ -35,6 +35,22 @@ public class GameOfLife/* extends JFrame*/ {
 			} catch (InterruptedException e) {
 				System.err.println("Error in setOff() => " + e.getMessage());
 			}
+			//D'ora in poi per aggiungere/rimuovere cellule dal frame usa i metodi 
+			//grid.removeCells(Vector v) e grid.addCells(Vector v) e poi forceUpdate() tipo così:
+			Vector<Cell> toRemove = new Vector<Cell>();
+			Vector<Cell> toAdd = new Vector<Cell>();
+			
+			for(int i = 0;i < 10;i++)
+				for(int j = 0;j < 10;j++)
+					toRemove.add(cells[i][j]);
+			
+			for(int i = 0;i < 10;i++)
+				for(int j = 0;j < 10;j++)
+					toAdd.add(new LivingCell(i,j));
+				
+			grid.removeCells(toRemove);
+			grid.addCells(toAdd);
+			
 			grid.forceUpdate(); //fa grid.repaint(); ogni 4 secondi (aggiustiamo poi);
 		}
 	}
@@ -43,7 +59,7 @@ public class GameOfLife/* extends JFrame*/ {
 		cells = new Cell[size][size];
 		for(int i = 0;i < size;i++ )
 			for(int j = 0;j < size;j++)
-				cells[i][j] = new DeadCell(i,j);
+				cells[i][j] = ((i * j) % 2 == 0)?new DeadCell(i,j):new LivingCell(i,j);
 	}
 
 	private void newGeneration(Generator[] generators,Terminator[] terminators, int coreN){

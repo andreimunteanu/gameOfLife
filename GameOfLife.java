@@ -1,21 +1,12 @@
-import java.awt.Color;
-import java.awt.Dimension;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.Vector;
 
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-
-public class GameOfLife extends JFrame {
-
+public class GameOfLife/* extends JFrame*/ {
+	private Grid grid;
 	private Integer workingPos = 0;
-
-	private final static int initial_SIZE = 50;
-	static int size=initial_SIZE;
-	private final long serialVersionUID = 1L;
+	private final static int SIZE_50 = 50;
+	private final static int SIZE_100 = 100;
+	private final static int SIZE_200 = 200;
+	static int size = SIZE_50;
 	private Cell[][] cells;
 	private Vector<Cell> actualGeneration = new Vector<Cell>();
 	private Vector<Cell> newGeneration = new Vector<Cell>();
@@ -24,9 +15,11 @@ public class GameOfLife extends JFrame {
 	// quelle che cambiano stato n.b c'è da fare il cambio di stato nel frame			
 	// forse c'è un alternativa. vado a dormire ciao.
 
+	public static void main(String[] args) {
+		new GameOfLife();
+	}
 
 	public GameOfLife(){
-		super("Game of Life");
 		setOff();
 	}
 
@@ -34,64 +27,16 @@ public class GameOfLife extends JFrame {
 		int coreN = Runtime.getRuntime().availableProcessors();
 		Generator[] generators = new Generator[coreN];
 		Terminator[] terminators = new Terminator[coreN];
-
-		initFrame();
-
-		for(int i=0; i<size; i++)
-			for(int j=0; j<size;j++){
-				
-				//getContentPane().remove(cells[i][j]); //causa eccezione
-				cells[i][j] = new LivingCell(i,j);
-				getContentPane().add(cells[i][j]);
-			}
-		
-		getContentPane().repaint();
-
-		/*while(true){ //dovra diventare while(play()) un metodo che permetta di fermare il gioco quando vine schiacciato un bottone
-			for(int i = 0; i < coreN; i++){
-				generators[i] = new Generator();
-				terminators[i] = new Terminator();
-			}
-			newGeneration(generators,terminators, coreN);
-			addCellsToFrame();
-
-		}*/
-
-	}
-	private void initFrame(){
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		getContentPane().setLayout(null);
-		int xSize = (Cell.CELL_SIZE * size);
-		int ySize = (Cell.CELL_SIZE * size) + Cell.CELL_SIZE * 8;
-		setSize(xSize,ySize);
-		setResizable(false);
 		initCells();
-		addCellsToFrame();
-		initMenu();
-		setVisible(true);
-	}
-
-	private void initMenu() {
-		JMenuBar menu = new JMenuBar();
-		menu.setOpaque(true);
-		menu.setBackground(Color.WHITE);
-		menu.setPreferredSize(new Dimension(0,20));
-		JMenu file = new JMenu("File");
-		JMenu size = new JMenu("Size");
-		JMenu edit = new JMenu("Edit");
-		JMenuItem exit = new JMenuItem("Exit");
-		JMenuItem size1 = new JMenuItem("50 x 50");
-		JMenuItem size2 = new JMenuItem("100 x 100");
-		JMenuItem size3 = new JMenuItem("200 x 200");
-		edit.add(size);
-		size.add(size1);
-		size.add(size2);
-		size.add(size3);
-		file.addSeparator();
-		file.add(exit);
-		menu.add(file);
-		menu.add(edit);
-		setJMenuBar(menu);
+		grid = new Grid(cells, size);
+		while(true){
+			try {
+				Thread.sleep(4000);
+			} catch (InterruptedException e) {
+				System.err.println("Error in setOff() => " + e.getMessage());
+			}
+			grid.forceUpdate(); //fa grid.repaint(); ogni 4 secondi (aggiustiamo poi);
+		}
 	}
 
 	private void initCells(){
@@ -99,14 +44,6 @@ public class GameOfLife extends JFrame {
 		for(int i = 0;i < size;i++ )
 			for(int j = 0;j < size;j++)
 				cells[i][j] = new DeadCell(i,j);
-	}
-
-	private void addCellsToFrame() {
-		for(int i = 0;i < size;i++)
-			for(int j = 0;j < size;j++){
-				getContentPane().add(cells[i][j]);
-			}
-
 	}
 
 	private void newGeneration(Generator[] generators,Terminator[] terminators, int coreN){
@@ -151,6 +88,7 @@ public class GameOfLife extends JFrame {
 			}
 		}
 	}
+	
 	private void upDate(int index){//race condition
 		int aliveNeighbors = watchNeighbors(actualGeneration.get(index));
 
@@ -195,14 +133,10 @@ public class GameOfLife extends JFrame {
 			}
 		}
 	}
+
 	private void killCell(int i) {
 		int x = toTerminateCells.get(i).getX();
 		int y = toTerminateCells.get(i).getY();
 		cells[x][y] = new DeadCell(x,y);
 	}
-
-	public static void main(String[] args) {
-		new GameOfLife();
-	}
-
 }

@@ -1,5 +1,7 @@
 import java.awt.Color;
 import java.awt.Dimension;
+import java.util.Vector;
+
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -7,7 +9,7 @@ import javax.swing.JMenuItem;
 
 
 public class Grid extends JFrame{
-  Cell[][] cells;
+	Cell[][] cells;
 	int size;
 	public Grid(Cell[][] cells, int size){
 		super("Game Of Life");
@@ -59,6 +61,16 @@ public class Grid extends JFrame{
 
 	}
 
+	public void removeCells(Vector<Cell> removedCells){
+		for(Cell cell : removedCells)
+			getContentPane().remove(cell);
+	}
+	
+	public void addCells(Vector<Cell> addedCells){
+		for(Cell cell : addedCells)
+			getContentPane().add(cell);
+	}
+	
 	public void forceUpdate(){
 		getContentPane().repaint();
 	}

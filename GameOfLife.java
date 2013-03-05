@@ -8,10 +8,10 @@ public class GameOfLife/* extends JFrame*/ {
 	static int size = SIZE_50;
 	private static Integer workingPosition = 0;
 	private Cell[][] cells;
-	private Vector<Cell> actualGeneration = new Vector<Cell>();
-	private Vector<Cell> newGeneration = new Vector<Cell>();
-	private Vector<Cell> toTerminateCells = new Vector<Cell>(); //da fare cambio di stato nel frame
-	private Vector<DeadCell> possibleFutureGeneration = new Vector<DeadCell>(); //lista con cellule per la generazione futura non tutte ne fanno parte
+	private volatile Vector<Cell> actualGeneration = new Vector<Cell>();
+	private volatile Vector<Cell> newGeneration = new Vector<Cell>();
+	private volatile Vector<Cell> toTerminateCells = new Vector<Cell>(); //da fare cambio di stato nel frame
+	private volatile Vector<DeadCell> possibleFutureGeneration = new Vector<DeadCell>(); //lista con cellule per la generazione futura non tutte ne fanno parte
 	// quelle che cambiano stato n b c'e da fare il cambio di stato nel frame
 
 
@@ -24,12 +24,12 @@ public class GameOfLife/* extends JFrame*/ {
 	}
 	private void test(){
 		for(int i=25;i < 28;i++){
-			cells[i][25] = new LivingCell(i,25);
-			actualGeneration.add(cells[i][25]);
+			cells[25][i] = new LivingCell(25,i);
+			actualGeneration.add(cells[25][i]);
 		}
 	}
 	private void setOff(){
-		int coreN = Runtime.getRuntime().availableProcessors();
+		int coreN =1; //Runtime.getRuntime().availableProcessors();
 		Cleaner[] cleaners = new Cleaner[coreN];
 		Terminator[] terminators = new Terminator[coreN];
 		Generator[] generators = new Generator[coreN];
@@ -37,7 +37,7 @@ public class GameOfLife/* extends JFrame*/ {
 		initThreads(cleaners,generators,terminators);
 		test();
 		grid = new Grid(cells, size);
-		grid.forceUpdate();
+		//	grid.forceUpdate();
 		while(true){
 			try {
 				Thread.sleep(400);
@@ -45,26 +45,28 @@ public class GameOfLife/* extends JFrame*/ {
 				System.err.println("Error in setOff() => " + e.getMessage());
 			}
 			newGeneration(cleaners,generators,terminators);
-			grid.setDeadCells(toTerminateCells);
-			grid.setAliveCells(newGeneration);
+			//grid.removeCells(toTerminateCells);
+			//grid.addCells(newGeneration);
 			grid.forceUpdate(); //fa grid.repaint(); ogni 4 secondi (aggiustiamo poi);
 			System.out.println("new" + newGeneration.size());
 			System.out.println("to" + toTerminateCells.size());
 			System.out.println("possible" + possibleFutureGeneration.size());
-			toTerminateCells.clear();
-			possibleFutureGeneration.clear();
+			actualGeneration = newGeneration;
+			toTerminateCells=new Vector<Cell>();
+			possibleFutureGeneration=new Vector<DeadCell>();
 			System.out.println(actualGeneration.size());
 			grid.forceUpdate();
+			newGeneration=new Vector<Cell>();
 		}
 	}
-	
+
 	private void initCells(){
 		cells = new Cell[size][size];
 		for(int i = 0;i < size;i++ )
 			for(int j = 0;j < size;j++)
 				cells[i][j] = new DeadCell(i,j);
 	}
-	
+
 	private void initThreads(Cleaner[] cleaners,Generator[] generators,Terminator[] terminators){
 		for(int i=0;i < cleaners.length;i++){
 			cleaners[i] = new Cleaner();
@@ -73,37 +75,44 @@ public class GameOfLife/* extends JFrame*/ {
 		}
 	}
 	private void newGeneration(Cleaner[] cleaners,Generator[] generators,Terminator[] terminators){
+		//System.out.println(workingPosition+" "+actualGeneration.size());
+		workingPosition = 0;
+		System.out.println(cleaners[0].getState());
 		runThreads(cleaners);
+		//System.out.println("dopo la morte dei cleaners");
 		workingPosition = 0;
-		runThreads(generators);
-		workingPosition = 0;
+
 		runThreads(terminators);
 		workingPosition = 0;
-		actualGeneration = newGeneration;
+		runThreads(generators);
 	}
 
 	private void runThreads(Thread[] slaves){
 		for(int i=0; i < slaves.length;i++)
 			slaves[i].run();
-		
+
 		for(int i=0; i < slaves.length;i++)
 			try {
 				slaves[i].join();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			
+
 	}
 	private class Cleaner extends Thread{
 		private int i;
 		public void run(){
 			while(true){
 				synchronized (workingPosition){
-					if(workingPosition<actualGeneration.size()){
+					if(workingPosition < actualGeneration.size()){
+						//System.out.println("ciao non smetto" +actualGeneration.size());
 						i = workingPosition++;
+
 					}
-					else
+					else{
+						//System.out.println("Morto un cleaner se ne fa un altro");
 						return;
+					}
 				}
 				upDate(i);//potrebbe esserci race condition nelle variabile newGen e deadCells sicuramente
 			}
@@ -115,8 +124,10 @@ public class GameOfLife/* extends JFrame*/ {
 				if(aliveNeighbors == 2 || aliveNeighbors == 3)
 					newGeneration.add(actualGeneration.get(index));
 
-				else
+				else{
 					toTerminateCells.add(actualGeneration.get(index));
+					
+				}
 			}
 		}
 
@@ -130,7 +141,7 @@ public class GameOfLife/* extends JFrame*/ {
 					neighborCell = cells[Math.abs(i + x) % (size-1)][Math.abs(j + y) % (size-1)];
 					if((i != 0 || j != 0) && neighborCell instanceof LivingCell)
 						count++;
-					else if(i != 0 || j != 0){
+					else if(i != 0 || j != 0 && neighborCell instanceof DeadCell){
 						checkDeadCell((DeadCell)neighborCell);
 					}
 				}
@@ -149,10 +160,12 @@ public class GameOfLife/* extends JFrame*/ {
 	private class Terminator extends Thread{
 		private int i;
 		public void run(){
+			//System.out.println("Terminator online");
 			while(true){
 				synchronized (workingPosition){
-					if(workingPosition < toTerminateCells.size())
+					if(workingPosition < toTerminateCells.size()){
 						i = workingPosition++;
+					}
 					else
 						return;
 				}
@@ -163,18 +176,22 @@ public class GameOfLife/* extends JFrame*/ {
 			if(toTerminateCells.size() > 0){
 				int x = toTerminateCells.get(index).getX()/10;
 				int y = toTerminateCells.get(index).getY()/10;
+				grid.setDeadCell(toTerminateCells.get(index));
 				cells[x][y] = new DeadCell(x,y);
+				grid.setAliveCell(cells[x][y]);
 			}
 		}
 	}
-	
+
 	private class Generator extends Thread{
 		private int i;
 		public void run(){
+			//System.out.println("Generator online");
 			while(true){
 				synchronized(workingPosition){
-					if(workingPosition < possibleFutureGeneration.size())
+					if(workingPosition < possibleFutureGeneration.size()){
 						i = workingPosition++;
+					}
 					else
 						return;
 				}
@@ -188,8 +205,10 @@ public class GameOfLife/* extends JFrame*/ {
 				int x=cell.getX()/10;
 				int y=cell.getY()/10;
 				Cell newCell=new LivingCell(x,y);
+				grid.setDeadCell(possibleFutureGeneration.get(index));
 				newGeneration.add(newCell);
 				cells[x][y] = newCell;
+				grid.setAliveCell(cells[x][y]);
 			}
 		}
 	}

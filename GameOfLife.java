@@ -2,18 +2,18 @@ import java.util.Vector;
 
 public class GameOfLife/* extends JFrame*/ {
 	private Grid grid;
-	private Integer workingPos = 0;
-	private final static int SIZE_50 = 50;
-	private final static int SIZE_100 = 100;
+	private final static int SIZE_50 = 50;	//variabili inutili passiamo direttamente il parametro
+	private final static int SIZE_100 = 100;	// nell'actionlistener
 	private final static int SIZE_200 = 200;
 	static int size = SIZE_50;
+	private static Integer workingPosition = 0;
 	private Cell[][] cells;
 	private Vector<Cell> actualGeneration = new Vector<Cell>();
 	private Vector<Cell> newGeneration = new Vector<Cell>();
 	private Vector<Cell> toTerminateCells = new Vector<Cell>(); //da fare cambio di stato nel frame
-	private Vector<Cell> possibleFutureGeneration = new Vector<Cell>(); //lista con cellule per la generazione futura non tutte ne fanno parte
-	// quelle che cambiano stato n.b c'è da fare il cambio di stato nel frame			
-	// forse c'è un alternativa. vado a dormire ciao.
+	private Vector<DeadCell> possibleFutureGeneration = new Vector<DeadCell>(); //lista con cellule per la generazione futura non tutte ne fanno parte
+	// quelle che cambiano stato n b c'e da fare il cambio di stato nel frame
+
 
 	public static void main(String[] args) {
 		new GameOfLife();
@@ -25,9 +25,11 @@ public class GameOfLife/* extends JFrame*/ {
 
 	private void setOff(){
 		int coreN = Runtime.getRuntime().availableProcessors();
-		Generator[] generators = new Generator[coreN];
+		Cleaner[] cleaners = new Cleaner[coreN];
 		Terminator[] terminators = new Terminator[coreN];
+		Generator[] generators = new Generator[coreN];
 		initCells();
+		initThreads(cleaners,generators,terminators);
 		grid = new Grid(cells, size);
 		while(true){
 			try {
@@ -35,124 +37,141 @@ public class GameOfLife/* extends JFrame*/ {
 			} catch (InterruptedException e) {
 				System.err.println("Error in setOff() => " + e.getMessage());
 			}
-			//D'ora in poi per aggiungere/rimuovere cellule dal frame usa i metodi 
-			//grid.removeCells(Vector v) e grid.addCells(Vector v) e poi forceUpdate() tipo così:
-			Vector<Cell> toRemove = new Vector<Cell>();
-			Vector<Cell> toAdd = new Vector<Cell>();
-			
-			for(int i = 0;i < 10;i++)
-				for(int j = 0;j < 10;j++)
-					toRemove.add(cells[i][j]);
-			
-			for(int i = 0;i < 10;i++)
-				for(int j = 0;j < 10;j++)
-					toAdd.add(new LivingCell(i,j));
-				
-			grid.removeCells(toRemove);
-			grid.addCells(toAdd);
-			
+			newGeneration(cleaners,generators,terminators);
 			grid.forceUpdate(); //fa grid.repaint(); ogni 4 secondi (aggiustiamo poi);
 		}
 	}
-
+	
 	private void initCells(){
 		cells = new Cell[size][size];
 		for(int i = 0;i < size;i++ )
 			for(int j = 0;j < size;j++)
-				cells[i][j] = ((i * j) % 2 == 0)?new DeadCell(i,j):new LivingCell(i,j);
+				cells[i][j] = new DeadCell(i,j);
 	}
-
-	private void newGeneration(Generator[] generators,Terminator[] terminators, int coreN){
-		for(int i = 0; i < coreN; i++)
-			generators[i].start();
-
-		for(int i = 0; i < coreN; i++){
-			try {
-				generators[i].join();
-			} catch (InterruptedException e) {
-				System.err.println("Error in newGeneration(generators) => " + e.getMessage());
-			}
+	
+	private void initThreads(Cleaner[] cleaners,Generator[] generators,Terminator[] terminators){
+		for(int i=0;i < cleaners.length;i++){
+			cleaners[i] = new Cleaner();
+			generators[i] = new Generator();
+			terminators[i] = new Terminator();
 		}
-
-		actualGeneration = newGeneration;
+	}
+	private void newGeneration(Cleaner[] cleaners,Generator[] generators,Terminator[] terminators){
+		runThreads(cleaners);
+		workingPosition = 0;
+		runThreads(generators);
+		workingPosition = 0;
+		runThreads(terminators);
+		workingPosition = 0;
 		newGeneration.clear();
-		workingPos = 0;
-
-		for(int i = 0; i < coreN; i++)
-			terminators[i].start();
-
-		for(int i = 0; i < coreN; i++){
-			try {
-				terminators[i].join();
-			} catch (InterruptedException e) {
-				System.err.println("Error in newGeneration(terminators) => " + e.getMessage());
-			}
-		}
+		actualGeneration = newGeneration;
 	}
 
-	private class Generator extends Thread{
-		int i;
+	private void runThreads(Thread[] slaves){
+		for(int i=0; i < slaves.length;i++)
+			slaves[i].run();
+		
+		for(int i=0; i < slaves.length;i++)
+			try {
+				slaves[i].join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			
+	}
+	private class Cleaner extends Thread{
+		private int i;
 		public void run(){
 			while(true){
-				synchronized (workingPos){
-					if(workingPos<actualGeneration.size())
-						i = workingPos++;
+				synchronized (workingPosition){
+					if(workingPosition<actualGeneration.size())
+						i = workingPosition++;
 					else
 						return;
 				}
 				upDate(i);//potrebbe esserci race condition nelle variabile newGen e deadCells sicuramente
 			}
 		}
-	}
-	
-	private void upDate(int index){//race condition
-		int aliveNeighbors = watchNeighbors(actualGeneration.get(index));
 
-		if(aliveNeighbors == 2 || aliveNeighbors == 3)
-			newGeneration.add(actualGeneration.get(index));
+		private void upDate(int index){//race condition
+			if(actualGeneration.size() > 0){
+				int aliveNeighbors = watchNeighbors(actualGeneration.get(index));
 
-		else
-			toTerminateCells.add(actualGeneration.get(index));
-	}
+				if(aliveNeighbors == 2 || aliveNeighbors == 3)
+					newGeneration.add(actualGeneration.get(index));
 
-	private int watchNeighbors(Cell cell) {// guarda i vicini di cell restituisce il numero di cellule vive e incrementa di 1 il campo numberOfN 
-		int x = cell.getX();				// delle cellule morte
-		int y = cell.getY();
-		int count = 0;
-		Cell neighborCell;
-		for(int i = -1; i < 2; i++)
-			for(int j = -1;j < 2;j++){
-				neighborCell = cells[Math.abs(i + x) % (size-1)][Math.abs(j + y) % (size-1)];
-				if((i != 0 || j != 0) && neighborCell instanceof LivingCell)
-					count++;
-				else if(i != 0 || j != 0){
-					neighborCell.incrementNumbOfN();
-					if(neighborCell.getNumbOfN() == 3)
-						possibleFutureGeneration.add(neighborCell);
-				}
+				else
+					toTerminateCells.add(actualGeneration.get(index));
 			}
+		}
 
-		return count;
+		private int watchNeighbors(Cell cell) {// guarda i vicini di cell restituisce il numero di cellule vive e incrementa di 1 il campo numberOfN
+			int x = cell.getX(); // delle cellule morte
+			int y = cell.getY();
+			int count = 0;
+			Cell neighborCell;
+			for(int i = -1; i < 2; i++)
+				for(int j = -1;j < 2;j++){
+					neighborCell = cells[Math.abs(i + x) % (size-1)][Math.abs(j + y) % (size-1)];
+					if((i != 0 || j != 0) && neighborCell instanceof LivingCell)
+						count++;
+					else if(i != 0 || j != 0){
+						checkDeadCell((DeadCell)neighborCell);
+					}
+				}
+
+			return count;
+		}
+		private void checkDeadCell(DeadCell cell){
+			cell.incrementNumbOfN();
+			if(cell.getNumbOfN() == 3)
+				possibleFutureGeneration.add(cell);
+		}
 	}
+
+
 
 	private class Terminator extends Thread{
-		int i;
+		private int i;
 		public void run(){
 			while(true){
-				synchronized (workingPos){
-					if(workingPos<toTerminateCells.size())
-						i = workingPos++;
+				synchronized (workingPosition){
+					if(workingPosition < toTerminateCells.size())
+						i = workingPosition++;
 					else
 						return;
 				}
 				killCell(i);
 			}
 		}
+		private void killCell(int index) {
+			if(toTerminateCells.size() > 0){
+				int x = toTerminateCells.get(index).getX();
+				int y = toTerminateCells.get(index).getY();
+				cells[x][y] = new DeadCell(x,y);
+			}
+		}
+	}
+	
+	private class Generator extends Thread{
+		private int i;
+		public void run(){
+			while(true){
+				synchronized(workingPosition){
+					if(workingPosition < possibleFutureGeneration.size())
+						i = workingPosition++;
+					else
+						return;
+				}
+				checkDeadCell(i);
+			}
+		}
+
+		private void checkDeadCell(int index){
+			DeadCell cell = possibleFutureGeneration.get(index);
+			if(cell.getNumbOfN() == 3)
+				newGeneration.add(cell);
+		}
 	}
 
-	private void killCell(int i) {
-		int x = toTerminateCells.get(i).getX();
-		int y = toTerminateCells.get(i).getY();
-		cells[x][y] = new DeadCell(x,y);
-	}
 }

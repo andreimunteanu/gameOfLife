@@ -65,12 +65,26 @@ public class Grid extends JFrame{
 		for(Cell cell : removedCells)
 			getContentPane().remove(cell);
 	}
-	
+
 	public void addCells(Vector<Cell> addedCells){
 		for(Cell cell : addedCells)
 			getContentPane().add(cell);
 	}
 	
+	public void setAliveCells(Vector<Cell> cells){
+		for(Cell cell : cells){
+			getContentPane().remove(cell);
+			getContentPane().add(new LivingCell(cell.getX()/10,cell.getY()/10));
+		}
+			
+	}
+	public void setDeadCells(Vector<Cell> cells){
+		for(Cell cell : cells){
+			getContentPane().remove(cell);
+			getContentPane().add(new DeadCell(cell.getX()/10,cell.getY()/10));
+		}
+	}
+			
 	public void forceUpdate(){
 		getContentPane().repaint();
 	}

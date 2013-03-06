@@ -48,13 +48,13 @@ public class GameOfLife/* extends JFrame*/ {
 			//grid.removeCells(toTerminateCells);
 			//grid.addCells(newGeneration);
 			grid.forceUpdate(); //fa grid.repaint(); ogni 4 secondi (aggiustiamo poi);
-			System.out.println("new" + newGeneration.size());
-			System.out.println("to" + toTerminateCells.size());
-			System.out.println("possible" + possibleFutureGeneration.size());
+			//System.out.println("new" + newGeneration.size());
+			//System.out.println("to" + toTerminateCells.size());
+			//System.out.println("possible" + possibleFutureGeneration.size());
 			actualGeneration = newGeneration;
 			toTerminateCells=new Vector<Cell>();
 			possibleFutureGeneration=new Vector<DeadCell>();
-			System.out.println(actualGeneration.size());
+			//System.out.println(actualGeneration.size());
 			grid.forceUpdate();
 			newGeneration=new Vector<Cell>();
 		}
@@ -77,7 +77,7 @@ public class GameOfLife/* extends JFrame*/ {
 	private void newGeneration(Cleaner[] cleaners,Generator[] generators,Terminator[] terminators){
 		//System.out.println(workingPosition+" "+actualGeneration.size());
 		workingPosition = 0;
-		System.out.println(cleaners[0].getState());
+		//System.out.println(cleaners[0].getState());
 		runThreads(cleaners);
 		//System.out.println("dopo la morte dei cleaners");
 		workingPosition = 0;

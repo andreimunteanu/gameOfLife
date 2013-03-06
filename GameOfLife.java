@@ -40,7 +40,7 @@ public class GameOfLife/* extends JFrame*/ {
 		//	grid.forceUpdate();
 		while(true){
 			try {
-				Thread.sleep(400);
+				Thread.sleep(4);
 			} catch (InterruptedException e) {
 				System.err.println("Error in setOff() => " + e.getMessage());
 			}
@@ -132,8 +132,8 @@ public class GameOfLife/* extends JFrame*/ {
 		}
 
 		private int watchNeighbors(Cell cell) {// guarda i vicini di cell restituisce il numero di cellule vive e incrementa di 1 il campo numberOfN
-			int x = cell.getX()/10; // delle cellule morte
-			int y = cell.getY()/10;
+			int x = cell.auxGetX(); // delle cellule morte
+			int y = cell.auxGetY();
 			int count = 0;
 			Cell neighborCell;
 			for(int i = -1; i < 2; i++)
@@ -174,8 +174,8 @@ public class GameOfLife/* extends JFrame*/ {
 		}
 		private void killCell(int index) {
 			if(toTerminateCells.size() > 0){
-				int x = toTerminateCells.get(index).getX()/10;
-				int y = toTerminateCells.get(index).getY()/10;
+				int x = toTerminateCells.get(index).auxGetX();
+				int y = toTerminateCells.get(index).auxGetY();
 				grid.removeCell(toTerminateCells.get(index));
 				cells[x][y] = new DeadCell(x,y);
 				grid.addCell(cells[x][y]);
@@ -202,8 +202,8 @@ public class GameOfLife/* extends JFrame*/ {
 		private void checkDeadCell(int index){
 			DeadCell cell = possibleFutureGeneration.get(index);
 			if(cell.getNumbOfN() == 3){
-				int x=cell.getX()/10;
-				int y=cell.getY()/10;
+				int x=cell.auxGetX();
+				int y=cell.auxGetY();
 				Cell newCell=new LivingCell(x,y);
 				grid.removeCell(possibleFutureGeneration.get(index));
 				newGeneration.add(newCell);

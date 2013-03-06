@@ -46,9 +46,9 @@ public class GameOfLife/* extends JFrame*/ {
 			//grid.removeCells(toTerminateCells);
 			//grid.addCells(newGeneration);
 			grid.forceUpdate(); //fa grid.repaint(); ogni 4 secondi (aggiustiamo poi);
-			//System.out.println("new" + newGeneration.size());
-			//System.out.println("to" + toTerminateCells.size());
-			//System.out.println("possible" + possibleFutureGeneration.size());
+			System.out.println("new" + newGeneration.size());
+			System.out.println("to" + toTerminateCells.size());
+			System.out.println("possible" + possibleFutureGeneration.size());
 			actualGeneration = newGeneration;
 			toTerminateCells=new Vector<Cell>();
 			possibleFutureGeneration=new Vector<Cell>();

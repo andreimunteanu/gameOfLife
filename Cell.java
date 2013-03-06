@@ -1,3 +1,7 @@
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
@@ -11,6 +15,12 @@ public class Cell extends JButton{
 		setBounds(x * Cell.CELL_SIZE, y * Cell.CELL_SIZE, Cell.CELL_SIZE, Cell.CELL_SIZE);
 		this.x = x;
 		this.y = y;
+		this.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+			System.out.println("CLICK FIGGA");
+				}
+			});
 	}
 	
 	public int auxGetX(){

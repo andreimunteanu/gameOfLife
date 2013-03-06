@@ -2,16 +2,13 @@ import java.util.Vector;
 
 public class GameOfLife/* extends JFrame*/ {
 	private Grid grid;
-	private final static int SIZE_50 = 50;	//variabili inutili passiamo direttamente il parametro
-	private final static int SIZE_100 = 100;	// nell'actionlistener
-	private final static int SIZE_200 = 200;
-	static int size = SIZE_50;
+
 	private static Integer workingPosition = 0;
-	private Cell[][] cells;
+	//private Cell[][] cells;
 	private volatile Vector<Cell> actualGeneration = new Vector<Cell>();
 	private volatile Vector<Cell> newGeneration = new Vector<Cell>();
 	private volatile Vector<Cell> toTerminateCells = new Vector<Cell>(); //da fare cambio di stato nel frame
-	private volatile Vector<DeadCell> possibleFutureGeneration = new Vector<DeadCell>(); //lista con cellule per la generazione futura non tutte ne fanno parte
+	private volatile Vector<Cell> possibleFutureGeneration = new Vector<Cell>(); //lista con cellule per la generazione futura non tutte ne fanno parte
 	// quelle che cambiano stato n b c'e da fare il cambio di stato nel frame
 
 
@@ -22,25 +19,26 @@ public class GameOfLife/* extends JFrame*/ {
 	public GameOfLife(){
 		setOff();
 	}
+	/*
 	private void test(){
 		for(int i=25;i < 28;i++){
-			cells[25][i] = new LivingCell(25,i);
+			cells[25][i] = grid.new LivingCell(25,i);
 			actualGeneration.add(cells[25][i]);
 		}
 	}
+	 */
 	private void setOff(){
 		int coreN =1; //Runtime.getRuntime().availableProcessors();
 		Cleaner[] cleaners = new Cleaner[coreN];
 		Terminator[] terminators = new Terminator[coreN];
 		Generator[] generators = new Generator[coreN];
-		initCells();
 		initThreads(cleaners,generators,terminators);
-		test();
-		grid = new Grid(cells, size);
+		grid = new Grid(actualGeneration);
 		//	grid.forceUpdate();
+		grid.test();
 		while(true){
 			try {
-				Thread.sleep(4);
+				Thread.sleep(400);
 			} catch (InterruptedException e) {
 				System.err.println("Error in setOff() => " + e.getMessage());
 			}
@@ -53,18 +51,11 @@ public class GameOfLife/* extends JFrame*/ {
 			//System.out.println("possible" + possibleFutureGeneration.size());
 			actualGeneration = newGeneration;
 			toTerminateCells=new Vector<Cell>();
-			possibleFutureGeneration=new Vector<DeadCell>();
+			possibleFutureGeneration=new Vector<Cell>();
 			//System.out.println(actualGeneration.size());
 			grid.forceUpdate();
 			newGeneration=new Vector<Cell>();
 		}
-	}
-
-	private void initCells(){
-		cells = new Cell[size][size];
-		for(int i = 0;i < size;i++ )
-			for(int j = 0;j < size;j++)
-				cells[i][j] = new DeadCell(i,j);
 	}
 
 	private void initThreads(Cleaner[] cleaners,Generator[] generators,Terminator[] terminators){
@@ -126,7 +117,7 @@ public class GameOfLife/* extends JFrame*/ {
 
 				else{
 					toTerminateCells.add(actualGeneration.get(index));
-					
+
 				}
 			}
 		}
@@ -138,19 +129,19 @@ public class GameOfLife/* extends JFrame*/ {
 			Cell neighborCell;
 			for(int i = -1; i < 2; i++)
 				for(int j = -1;j < 2;j++){
-					neighborCell = cells[Math.abs(i + x) % (size-1)][Math.abs(j + y) % (size-1)];
-					if((i != 0 || j != 0) && neighborCell instanceof LivingCell)
+					neighborCell = grid.getCell(i + x, j + y);
+					if((i != 0 || j != 0) && grid.isLivingCell(neighborCell))
 						count++;
-					else if(i != 0 || j != 0 && neighborCell instanceof DeadCell){
-						checkDeadCell((DeadCell)neighborCell);
+					else if(i != 0 || j != 0){
+						checkDeadCell(neighborCell);
 					}
 				}
 
 			return count;
 		}
-		private void checkDeadCell(DeadCell cell){
-			cell.incrementNumbOfN();
-			if(cell.getNumbOfN() == 1)
+		private void checkDeadCell(Cell cell){
+			grid.incrementNumbOfN(cell);
+			if(grid.getNumbOfN(cell) == 1)
 				possibleFutureGeneration.add(cell);
 		}
 	}
@@ -174,11 +165,9 @@ public class GameOfLife/* extends JFrame*/ {
 		}
 		private void killCell(int index) {
 			if(toTerminateCells.size() > 0){
-				int x = toTerminateCells.get(index).auxGetX();
-				int y = toTerminateCells.get(index).auxGetY();
-				grid.removeCell(toTerminateCells.get(index));
-				cells[x][y] = new DeadCell(x,y);
-				grid.addCell(cells[x][y]);
+
+				grid.kill(toTerminateCells.get(index));
+
 			}
 		}
 	}
@@ -200,19 +189,12 @@ public class GameOfLife/* extends JFrame*/ {
 		}
 
 		private void checkDeadCell(int index){
-			DeadCell cell = possibleFutureGeneration.get(index);
-			if(cell.getNumbOfN() == 3){
-				int x=cell.auxGetX();
-				int y=cell.auxGetY();
-				Cell newCell=new LivingCell(x,y);
-				grid.removeCell(possibleFutureGeneration.get(index));
-				newGeneration.add(newCell);
-				cells[x][y] = newCell;
-				grid.addCell(cells[x][y]);
+			Cell cell = possibleFutureGeneration.get(index);
+			if(grid.getNumbOfN(cell) == 3){
+				newGeneration.add(grid.createLivingCell(cell));
 			}
 			else
-				cell.resetCell();
+				grid.resetCell(cell);
 		}
 	}
-
 }

@@ -1,9 +1,9 @@
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+
 
 public class Cell extends JButton{
 	private int x;

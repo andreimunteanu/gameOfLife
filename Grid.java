@@ -60,7 +60,7 @@ public class Grid extends JFrame{
 		menu.add(edit);
 		setJMenuBar(menu);
 	}
-	
+
 	public void test(){
 		for(int i=25;i < 28;i++){
 			getContentPane().remove(cells[25][i]);
@@ -76,7 +76,7 @@ public class Grid extends JFrame{
 				getContentPane().add(cells[i][j]);
 			}
 	}
-	
+
 	private void initCells(){ // da togliere
 		cells = new Cell[size][size];
 		for(int i = 0;i < size;i++ )
@@ -84,15 +84,23 @@ public class Grid extends JFrame{
 				cells[i][j] = new DeadCell(i,j);
 	}
 
-	public void switchCell(Cell cell){
+	private void switchCell(Cell cell){
 		int x = cell.auxGetX();
 		int y = cell.auxGetY();
 		getContentPane().remove(cell);
-		cells[x][y] = (cell instanceof DeadCell)?new LivingCell(x,y):new DeadCell(x,y);
+		if(cell instanceof LivingCell){
+			cells[x][y] = new DeadCell(x,y);
+			actualGeneration.remove(cell);
+		}
+		else{
+			cells[x][y] = new LivingCell(x,y);
+			actualGeneration.add(cells[x][y]);
+		}
 		getContentPane().add(cells[x][y]);
+		//forceUpdate();
 	}
-	
-	
+
+
 	public void addCell(Cell cell){
 		getContentPane().add(cell);
 
@@ -108,7 +116,7 @@ public class Grid extends JFrame{
 	public boolean isLivingCell(Cell neighborCell) {
 		return neighborCell instanceof LivingCell;
 	}
-	
+
 	public void incrementNumbOfN(Cell cell) {
 		((DeadCell)cell).numberOfN++;
 	}
@@ -119,13 +127,21 @@ public class Grid extends JFrame{
 
 	public void resetCell(Cell cell) {
 		((DeadCell)cell).numberOfN = 0;
-	}
-	
+	}	
+
 	private class DeadCell extends Cell{
 		private Integer numberOfN = 0;
 		private static final long serialVersionUID = 1L;
 		protected DeadCell(int x, int y) {
 			super(x, y, "deadCell.gif");
+			this.addActionListener(new ActionListener(){
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					Grid.this.switchCell(DeadCell.this);
+
+					System.out.println("CLICK FIGGA");
+				}
+			});
 		}
 	}
 
@@ -133,6 +149,13 @@ public class Grid extends JFrame{
 		private static final long serialVersionUID = 1L;
 		public LivingCell(int x, int y) {
 			super(x,y,"cell.gif");
+			this.addActionListener(new ActionListener(){
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					Grid.this.switchCell(LivingCell.this);
+					System.out.println("CLICK FIGGA");
+				}
+			});
 		}
 	}
 

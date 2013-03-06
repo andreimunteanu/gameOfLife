@@ -150,7 +150,7 @@ public class GameOfLife/* extends JFrame*/ {
 		}
 		private void checkDeadCell(DeadCell cell){
 			cell.incrementNumbOfN();
-			if(cell.getNumbOfN() == 3)
+			if(cell.getNumbOfN() == 1)
 				possibleFutureGeneration.add(cell);
 		}
 	}
@@ -176,9 +176,9 @@ public class GameOfLife/* extends JFrame*/ {
 			if(toTerminateCells.size() > 0){
 				int x = toTerminateCells.get(index).getX()/10;
 				int y = toTerminateCells.get(index).getY()/10;
-				grid.setDeadCell(toTerminateCells.get(index));
+				grid.removeCell(toTerminateCells.get(index));
 				cells[x][y] = new DeadCell(x,y);
-				grid.setAliveCell(cells[x][y]);
+				grid.addCell(cells[x][y]);
 			}
 		}
 	}
@@ -205,11 +205,13 @@ public class GameOfLife/* extends JFrame*/ {
 				int x=cell.getX()/10;
 				int y=cell.getY()/10;
 				Cell newCell=new LivingCell(x,y);
-				grid.setDeadCell(possibleFutureGeneration.get(index));
+				grid.removeCell(possibleFutureGeneration.get(index));
 				newGeneration.add(newCell);
 				cells[x][y] = newCell;
-				grid.setAliveCell(cells[x][y]);
+				grid.addCell(cells[x][y]);
 			}
+			else
+				cell.resetCell();
 		}
 	}
 

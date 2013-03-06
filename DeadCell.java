@@ -1,4 +1,3 @@
-
 public class DeadCell extends Cell{
 	private int numberOfN;
 	private static final long serialVersionUID = 1L;
@@ -12,5 +11,8 @@ public class DeadCell extends Cell{
 	
 	public synchronized void incrementNumbOfN(){
 		numberOfN++;
+	}
+	public void resetCell(){
+		numberOfN = 0;
 	}
 }

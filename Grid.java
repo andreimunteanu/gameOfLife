@@ -9,7 +9,7 @@ import javax.swing.JMenuItem;
 
 
 public class Grid extends JFrame{
-	Cell[][] cells;
+	private Cell[][] cells;
 	int size;
 	public Grid(Cell[][] cells, int size){
 		super("Game Of Life");
@@ -61,6 +61,14 @@ public class Grid extends JFrame{
 
 	}
 
+	public void switchCell(Cell cell){
+		int x = cell.auxGetX();
+		int y = cell.auxGetY();
+		getContentPane().remove(cell);
+		cells[x][y] = (cell instanceof DeadCell)?new LivingCell(x,y):new DeadCell(x,y);
+		getContentPane().add(cells[x][y]);
+	}
+	
 	public void addCell(Cell cell){
 		getContentPane().add(cell);
 

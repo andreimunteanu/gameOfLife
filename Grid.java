@@ -1,7 +1,11 @@
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Vector;
 
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -10,11 +14,15 @@ import javax.swing.JMenuItem;
 
 public class Grid extends JFrame{
 	private Cell[][] cells;
-	int size;
-	public Grid(Cell[][] cells, int size){
+	private final static int SIZE_50 = 50;	//variabili inutili passiamo direttamente il parametro
+	private final static int SIZE_100 = 100;	// nell'actionlistener
+	private final static int SIZE_200 = 200;
+	static int size = SIZE_50;
+	private Vector<Cell> actualGeneration;
+	public Grid(Vector<Cell> actualGeneration){
 		super("Game Of Life");
-		this.cells = cells;
-		this.size = size;
+		this.actualGeneration = actualGeneration;
+		initCells();
 		initFrame();
 	}
 
@@ -52,13 +60,28 @@ public class Grid extends JFrame{
 		menu.add(edit);
 		setJMenuBar(menu);
 	}
+	
+	public void test(){
+		for(int i=25;i < 28;i++){
+			getContentPane().remove(cells[25][i]);
+			cells[25][i] = new LivingCell(25,i);
+			actualGeneration.add(cells[25][i]);
+			getContentPane().add(cells[25][i]);
+		}
+	}
 
 	private void addCellsToFrame() {
 		for(int i = 0;i < size;i++)
 			for(int j = 0;j < size;j++){
 				getContentPane().add(cells[i][j]);
 			}
-
+	}
+	
+	private void initCells(){ // da togliere
+		cells = new Cell[size][size];
+		for(int i = 0;i < size;i++ )
+			for(int j = 0;j < size;j++)
+				cells[i][j] = new DeadCell(i,j);
 	}
 
 	public void switchCell(Cell cell){
@@ -68,6 +91,7 @@ public class Grid extends JFrame{
 		cells[x][y] = (cell instanceof DeadCell)?new LivingCell(x,y):new DeadCell(x,y);
 		getContentPane().add(cells[x][y]);
 	}
+	
 	
 	public void addCell(Cell cell){
 		getContentPane().add(cell);
@@ -80,4 +104,56 @@ public class Grid extends JFrame{
 	public void forceUpdate(){
 		getContentPane().repaint();
 	}
+
+	public boolean isLivingCell(Cell neighborCell) {
+		return neighborCell instanceof LivingCell;
+	}
+	
+	public void incrementNumbOfN(Cell cell) {
+		((DeadCell)cell).numberOfN++;
+	}
+
+	public int getNumbOfN(Cell cell) {
+		return ((DeadCell)cell).numberOfN;
+	}
+
+	public void resetCell(Cell cell) {
+		((DeadCell)cell).numberOfN = 0;
+	}
+	
+	private class DeadCell extends Cell{
+		private Integer numberOfN = 0;
+		private static final long serialVersionUID = 1L;
+		protected DeadCell(int x, int y) {
+			super(x, y, "deadCell.gif");
+		}
+	}
+
+	private class LivingCell extends Cell{
+		private static final long serialVersionUID = 1L;
+		public LivingCell(int x, int y) {
+			super(x,y,"cell.gif");
+		}
+	}
+
+	public Cell getCell(int i, int j) {
+		return cells[Math.abs(i) % (size - 1)][Math.abs(j) % (size - 1)];
+	}
+
+	public void kill(Cell cell) {
+		int x = cell.auxGetX();
+		int y = cell.auxGetY();
+		removeCell(cell);
+		cells[x][y] = new DeadCell(x,y);
+		addCell(cells[x][y]);
+	}
+
+	public Cell createLivingCell(Cell cell) {
+		int x=cell.auxGetX();
+		int y=cell.auxGetY();
+		removeCell(cell);
+		cells[x][y] = new LivingCell(x,y);
+		addCell(cells[x][y]);
+		return cells[x][y];
+	}	
 }

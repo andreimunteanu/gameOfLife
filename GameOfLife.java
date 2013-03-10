@@ -109,6 +109,8 @@ public class GameOfLife extends JFrame {
 				//System.out.println("to" + toTerminateCells.size());
 				//System.out.println("possible" + possibleFutureGeneration.size());
 				actualGeneration = newGeneration;
+				grid.setActualGeneration(actualGeneration); //questo risolve il bug del CLEAR
+				//prima cambiavamo solo il riferimento locale ad actualGeneration, lasciando invariato quello in Grid
 				toTerminateCells = new Vector<Cell>();
 				possibleFutureGeneration = new Vector<Cell>();
 				//System.out.println(actualGeneration.size());

@@ -1,11 +1,15 @@
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Vector;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+
 
 public class GameOfLife extends JFrame {
 	private Grid grid;
@@ -28,6 +32,9 @@ public class GameOfLife extends JFrame {
 		grid = new Grid(actualGeneration);
 		initFrame();
 		getContentPane().add(grid);
+		getContentPane().add(new startButton());
+		getContentPane().add(new pauseButton());
+		getContentPane().add(new clearButton());
 		initMenu();
 		setVisible(true);
 		setOff();
@@ -38,6 +45,7 @@ public class GameOfLife extends JFrame {
 		getContentPane().setLayout(null);
 		setSize(grid.getXSize(), grid.getYSize() + (8 * Cell.CELL_SIZE));
 		setResizable(false);
+		setLocation(10,10);
 		//addCellsToFrame();
 		//initMenu();
 		//setVisible(true);
@@ -94,9 +102,9 @@ public class GameOfLife extends JFrame {
 			//grid.removeCells(toTerminateCells);
 			//grid.addCells(newGeneration);
 			grid.forceUpdate(); //fa grid.repaint(); ogni 4 secondi (aggiustiamo poi);
-			System.out.println("new" + newGeneration.size());
-			System.out.println("to" + toTerminateCells.size());
-			System.out.println("possible" + possibleFutureGeneration.size());
+			//System.out.println("new" + newGeneration.size());
+			//System.out.println("to" + toTerminateCells.size());
+			//System.out.println("possible" + possibleFutureGeneration.size());
 			actualGeneration = newGeneration;
 			toTerminateCells=new Vector<Cell>();
 			possibleFutureGeneration=new Vector<Cell>();
@@ -243,6 +251,45 @@ public class GameOfLife extends JFrame {
 			}
 			else
 				grid.resetCell(cell);
+		}
+	}
+	
+	private class startButton extends JButton{
+		protected startButton(){
+			super("START");
+			setBounds(0, grid.getYSize(), grid.getXSize() / 3, 3 * Cell.CELL_SIZE	);
+			this.addActionListener(new ActionListener(){
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					System.out.println("CLICK START");
+				}
+			});
+		}
+	}
+	
+	private class pauseButton extends JButton{
+		protected pauseButton(){
+			super("PAUSE");
+			setBounds(grid.getXSize() / 3, grid.getYSize(), grid.getXSize() / 3, 3 * Cell.CELL_SIZE	);
+			this.addActionListener(new ActionListener(){
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					System.out.println("CLICK PAUSE");
+				}
+			});
+		}
+	}
+	
+	private class clearButton extends JButton{
+		protected clearButton(){
+			super("CLEAR");
+			setBounds(2 * (grid.getXSize() / 3), grid.getYSize(), grid.getXSize() / 3, 3 * Cell.CELL_SIZE	);
+			this.addActionListener(new ActionListener(){
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					System.out.println("CLICK CLEAR");
+				}
+			});
 		}
 	}
 }

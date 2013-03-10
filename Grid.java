@@ -149,7 +149,7 @@ public class Grid extends JPanel{
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					Grid.this.switchCell(DeadCell.this);
-
+					System.out.println("(DEAD) CLICK ON => " + "(" + DeadCell.this.auxGetX() + ", " + DeadCell.this.auxGetY() + ")");
 					//System.out.println("CLICK FIGGA");
 				}
 			});
@@ -159,12 +159,13 @@ public class Grid extends JPanel{
 	private class LivingCell extends Cell{
 		private static final long serialVersionUID = 1L;
 		public LivingCell(int x, int y) {
-			super(x,y,"cell.gif");
+			super(x,y,"nocell.gif");
+			setBackground(new Color(192,249,242));
 			this.addActionListener(new ActionListener(){
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					Grid.this.switchCell(LivingCell.this);
-					System.out.println("CLICK FIGGA");
+					System.out.println("(LIVING) CLICK ON => " + "(" + LivingCell.this.auxGetX() + ", " + LivingCell.this.auxGetY() + ")");
 				}
 			});
 		}
@@ -189,5 +190,14 @@ public class Grid extends JPanel{
 		cells[x][y] = new LivingCell(x,y);
 		addCell(cells[x][y]);
 		return cells[x][y];
+	}
+
+	public void clearGrid() {
+		System.out.println("Actual Generation = " + actualGeneration.size());
+		for(Cell c : actualGeneration){
+			System.out.println("REMOVING => " + "(" + c.auxGetX() + ", " + c.auxGetY() + ")");
+			kill(c);
+		}		
+		//forceUpdate();
 	}	
 }

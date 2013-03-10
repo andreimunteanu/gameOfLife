@@ -16,20 +16,21 @@ public class GameOfLife extends JFrame {
 	private boolean running = false;
 	private boolean finish = true;
 	private static Integer workingPosition = 0;
+	private int speed = 200; //default
 	//private Cell[][] cells;
 	private volatile Vector<Cell> actualGeneration = new Vector<Cell>();
 	private volatile Vector<Cell> newGeneration = new Vector<Cell>();
 	private volatile Vector<Cell> toTerminateCells = new Vector<Cell>(); //da fare cambio di stato nel frame
 	private volatile Vector<Cell> possibleFutureGeneration = new Vector<Cell>(); //lista con cellule per la generazione futura non tutte ne fanno parte
 	// quelle che cambiano stato n b c'e da fare il cambio di stato nel frame
-	public Vector<Cell> clickedCells = new Vector<Cell>();
+
 	public static void main(String[] args) {
 		new GameOfLife();
 	}
 
 	public GameOfLife(){
 		super("Game Of Life");
-		grid = new Grid(actualGeneration, clickedCells);
+		grid = new Grid(actualGeneration);
 		initFrame();
 		getContentPane().add(grid);
 		getContentPane().add(new startButton());
@@ -94,12 +95,10 @@ public class GameOfLife extends JFrame {
 		grid.test();
 		while(true){
 			try {
-				Thread.sleep(400);
+				Thread.sleep(speed);
 			} catch (InterruptedException e) {
 				System.err.println("Error in setOff() => " + e.getMessage());
 			}
-			checkClicked();
-			grid.forceUpdate();
 			if(running){
 
 				//grid.removeCells(toTerminateCells);
@@ -109,36 +108,22 @@ public class GameOfLife extends JFrame {
 				//System.out.println("to" + toTerminateCells.size());
 				//System.out.println("possible" + possibleFutureGeneration.size());
 				finish = false;
-				actualGeneration = grid.getActualGeneration();
-				newGeneration(cleaners,generators,terminators);
-				actualGeneration = newGeneration;
-				grid.setActualGeneration(actualGeneration); //questo risolve il bug del CLEAR
+				synchronized(grid){
+					actualGeneration = grid.getActualGeneration();
+					//se l'utente clicca qui sono cazzi
+					newGeneration(cleaners,generators,terminators); //o anche durante questo
+					actualGeneration = newGeneration;
+					grid.setActualGeneration(actualGeneration); //questo risolve il bug del CLEAR
+				}
 				//prima cambiavamo solo il riferimento locale ad actualGeneration, lasciando invariato quello in Grid
 				toTerminateCells = new Vector<Cell>();
 				possibleFutureGeneration = new Vector<Cell>();
 				//System.out.println(actualGeneration.size());
 				grid.forceUpdate();
 				newGeneration=new Vector<Cell>();
-				checkClicked();
 				finish = true;
 			}
 		}
-	}
-
-	private void checkClicked(){
-		grid.canClick=false;
-		for(Cell  cell: clickedCells){
-			if(grid.isLivingCell(cell))
-				grid.kill(cell);
-			else{
-				int x = cell.auxGetX();
-				int y = cell.auxGetY();
-				grid.createLivingCell(cell);
-				actualGeneration.add(grid.getCell(x,y));
-			}
-		}
-		clickedCells.clear();
-		grid.canClick=true;
 	}
 
 	private void initThreads(Cleaner[] cleaners,Generator[] generators,Terminator[] terminators){
@@ -193,8 +178,7 @@ public class GameOfLife extends JFrame {
 		}
 
 		private void upDate(int index){//race condition
-			if(actualGeneration.size() > 0 &&  
-					grid.isLivingCell(grid.getCell(actualGeneration.get(index).auxGetX(), actualGeneration.get(index).auxGetY()))){// trucchetto per facilitare il click
+			if(actualGeneration.size() > 0){
 				int aliveNeighbors = watchNeighbors(actualGeneration.get(index));
 				if(aliveNeighbors == 2 || aliveNeighbors == 3)
 					newGeneration.add(actualGeneration.get(index));

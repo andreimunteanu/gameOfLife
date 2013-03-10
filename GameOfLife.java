@@ -100,15 +100,16 @@ public class GameOfLife extends JFrame {
 				System.err.println("Error in setOff() => " + e.getMessage());
 			}
 			if(running){
-				actualGeneration = grid.getActualGeneration();
-				finish = false;
-				newGeneration(cleaners,generators,terminators);
+				
 				//grid.removeCells(toTerminateCells);
 				//grid.addCells(newGeneration);
-				grid.forceUpdate(); //fa grid.repaint(); ogni 4 secondi (aggiustiamo poi);
+				//grid.forceUpdate(); //fa grid.repaint(); ogni 4 secondi (aggiustiamo poi);
 				//System.out.println("new" + newGeneration.size());
 				//System.out.println("to" + toTerminateCells.size());
 				//System.out.println("possible" + possibleFutureGeneration.size());
+				finish = false;
+				actualGeneration = grid.getActualGeneration();
+				newGeneration(cleaners,generators,terminators);
 				actualGeneration = newGeneration;
 				grid.setActualGeneration(actualGeneration); //questo risolve il bug del CLEAR
 				//prima cambiavamo solo il riferimento locale ad actualGeneration, lasciando invariato quello in Grid
@@ -307,6 +308,7 @@ public class GameOfLife extends JFrame {
 					toTerminateCells = new Vector<Cell>();
 					grid.clearGrid();
 					actualGeneration = new Vector<Cell>();
+					grid.setActualGeneration(actualGeneration);
 					running = temp;
 					grid.forceUpdate();
 					getContentPane().repaint();

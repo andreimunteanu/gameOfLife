@@ -14,6 +14,7 @@ import javax.swing.JMenuItem;
 public class GameOfLife extends JFrame {
 	private Grid grid;
 	private boolean running = false;
+	private boolean finish = true;
 	private static Integer workingPosition = 0;
 	//private Cell[][] cells;
 	private volatile Vector<Cell> actualGeneration = new Vector<Cell>();
@@ -99,6 +100,7 @@ public class GameOfLife extends JFrame {
 				System.err.println("Error in setOff() => " + e.getMessage());
 			}
 			if(running){
+				finish = false;
 				newGeneration(cleaners,generators,terminators);
 				//grid.removeCells(toTerminateCells);
 				//grid.addCells(newGeneration);
@@ -107,11 +109,12 @@ public class GameOfLife extends JFrame {
 				//System.out.println("to" + toTerminateCells.size());
 				//System.out.println("possible" + possibleFutureGeneration.size());
 				actualGeneration = newGeneration;
-				toTerminateCells=new Vector<Cell>();
-				possibleFutureGeneration=new Vector<Cell>();
+				toTerminateCells = new Vector<Cell>();
+				possibleFutureGeneration = new Vector<Cell>();
 				//System.out.println(actualGeneration.size());
 				grid.forceUpdate();
 				newGeneration=new Vector<Cell>();
+				finish = true;
 			}
 		}
 	}
@@ -263,7 +266,6 @@ public class GameOfLife extends JFrame {
 			this.addActionListener(new ActionListener(){
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					System.out.println("CLICK START");
 					running = true;
 				}
 			});
@@ -277,7 +279,6 @@ public class GameOfLife extends JFrame {
 			this.addActionListener(new ActionListener(){
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					System.out.println("CLICK PAUSE");
 					running = false;
 				}
 			});
@@ -291,7 +292,21 @@ public class GameOfLife extends JFrame {
 			this.addActionListener(new ActionListener(){
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					System.out.println("CLICK CLEAR");
+					boolean temp = running;
+					running = false;
+					while(!finish); //BUSY WAITING :D :D :) :| :( D: anche se poco
+					//e non risolve comunque il bug (prova a fare clear dopo la pausa)
+					//c'è pieno di bug in realtà, forse la logica è da rivedere completamente
+					//per esempio, se facciamo una figura che poi scompare completamente, poi premi su "CLEAR"
+					//e dice che actual generation ha 9 elementi invece di 0
+					possibleFutureGeneration = new Vector<Cell>();
+					newGeneration = new Vector<Cell>();
+					toTerminateCells = new Vector<Cell>();
+					grid.clearGrid();
+					actualGeneration = new Vector<Cell>();
+					running = temp;
+					grid.forceUpdate();
+					getContentPane().repaint();
 				}
 			});
 		}

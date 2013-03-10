@@ -1,6 +1,13 @@
+import java.awt.Color;
+import java.awt.Dimension;
 import java.util.Vector;
 
-public class GameOfLife/* extends JFrame*/ {
+import javax.swing.JFrame;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+
+public class GameOfLife extends JFrame {
 	private Grid grid;
 
 	private static Integer workingPosition = 0;
@@ -10,15 +17,56 @@ public class GameOfLife/* extends JFrame*/ {
 	private volatile Vector<Cell> toTerminateCells = new Vector<Cell>(); //da fare cambio di stato nel frame
 	private volatile Vector<Cell> possibleFutureGeneration = new Vector<Cell>(); //lista con cellule per la generazione futura non tutte ne fanno parte
 	// quelle che cambiano stato n b c'e da fare il cambio di stato nel frame
-
+	private JFrame main;
 
 	public static void main(String[] args) {
 		new GameOfLife();
 	}
 
 	public GameOfLife(){
+		super("Game Of Life");
+		grid = new Grid(actualGeneration);
+		initFrame();
+		getContentPane().add(grid);
+		initMenu();
+		setVisible(true);
 		setOff();
 	}
+	
+	private void initFrame(){
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		getContentPane().setLayout(null);
+		setSize(grid.getXSize(), grid.getYSize() + (8 * Cell.CELL_SIZE));
+		setResizable(false);
+		//addCellsToFrame();
+		//initMenu();
+		//setVisible(true);
+	}
+	
+
+	private void initMenu() {
+		JMenuBar menu = new JMenuBar();
+		menu.setOpaque(true);
+		menu.setBackground(Color.WHITE);
+		menu.setPreferredSize(new Dimension(0,20));
+		JMenu file = new JMenu("File");
+		JMenu size = new JMenu("Size");
+		JMenu edit = new JMenu("Edit");
+		JMenuItem exit = new JMenuItem("Exit");
+		JMenuItem size1 = new JMenuItem("50 x 50");
+		JMenuItem size2 = new JMenuItem("100 x 100");
+		JMenuItem size3 = new JMenuItem("200 x 200");
+		edit.add(size);
+		size.add(size1);
+		size.add(size2);
+		size.add(size3);
+		file.addSeparator();
+		file.add(exit);
+		menu.add(file);
+		menu.add(edit);
+		setJMenuBar(menu);
+	}
+
 	/*
 	private void test(){
 		for(int i=25;i < 28;i++){
@@ -33,7 +81,7 @@ public class GameOfLife/* extends JFrame*/ {
 		Terminator[] terminators = new Terminator[coreN];
 		Generator[] generators = new Generator[coreN];
 		initThreads(cleaners,generators,terminators);
-		grid = new Grid(actualGeneration);
+		//grid = new Grid(actualGeneration);
 		//	grid.forceUpdate();
 		grid.test();
 		while(true){

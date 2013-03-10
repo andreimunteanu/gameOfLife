@@ -199,5 +199,9 @@ public class Grid extends JPanel{
 			kill(c);
 		}		
 		//forceUpdate();
+	}
+
+	public void setActualGeneration(Vector<Cell> actualGeneration) {
+		this.actualGeneration = actualGeneration;
 	}	
 }

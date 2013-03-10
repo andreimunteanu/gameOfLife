@@ -13,7 +13,7 @@ import javax.swing.JMenuItem;
 
 public class GameOfLife extends JFrame {
 	private Grid grid;
-
+	private boolean running = false;
 	private static Integer workingPosition = 0;
 	//private Cell[][] cells;
 	private volatile Vector<Cell> actualGeneration = new Vector<Cell>();
@@ -39,7 +39,7 @@ public class GameOfLife extends JFrame {
 		setVisible(true);
 		setOff();
 	}
-	
+
 	private void initFrame(){
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		getContentPane().setLayout(null);
@@ -50,7 +50,7 @@ public class GameOfLife extends JFrame {
 		//initMenu();
 		//setVisible(true);
 	}
-	
+
 
 	private void initMenu() {
 		JMenuBar menu = new JMenuBar();
@@ -98,19 +98,21 @@ public class GameOfLife extends JFrame {
 			} catch (InterruptedException e) {
 				System.err.println("Error in setOff() => " + e.getMessage());
 			}
-			newGeneration(cleaners,generators,terminators);
-			//grid.removeCells(toTerminateCells);
-			//grid.addCells(newGeneration);
-			grid.forceUpdate(); //fa grid.repaint(); ogni 4 secondi (aggiustiamo poi);
-			//System.out.println("new" + newGeneration.size());
-			//System.out.println("to" + toTerminateCells.size());
-			//System.out.println("possible" + possibleFutureGeneration.size());
-			actualGeneration = newGeneration;
-			toTerminateCells=new Vector<Cell>();
-			possibleFutureGeneration=new Vector<Cell>();
-			//System.out.println(actualGeneration.size());
-			grid.forceUpdate();
-			newGeneration=new Vector<Cell>();
+			if(running){
+				newGeneration(cleaners,generators,terminators);
+				//grid.removeCells(toTerminateCells);
+				//grid.addCells(newGeneration);
+				grid.forceUpdate(); //fa grid.repaint(); ogni 4 secondi (aggiustiamo poi);
+				//System.out.println("new" + newGeneration.size());
+				//System.out.println("to" + toTerminateCells.size());
+				//System.out.println("possible" + possibleFutureGeneration.size());
+				actualGeneration = newGeneration;
+				toTerminateCells=new Vector<Cell>();
+				possibleFutureGeneration=new Vector<Cell>();
+				//System.out.println(actualGeneration.size());
+				grid.forceUpdate();
+				newGeneration=new Vector<Cell>();
+			}
 		}
 	}
 
@@ -253,7 +255,7 @@ public class GameOfLife extends JFrame {
 				grid.resetCell(cell);
 		}
 	}
-	
+
 	private class startButton extends JButton{
 		protected startButton(){
 			super("START");
@@ -262,11 +264,12 @@ public class GameOfLife extends JFrame {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					System.out.println("CLICK START");
+					running = true;
 				}
 			});
 		}
 	}
-	
+
 	private class pauseButton extends JButton{
 		protected pauseButton(){
 			super("PAUSE");
@@ -275,11 +278,12 @@ public class GameOfLife extends JFrame {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					System.out.println("CLICK PAUSE");
+					running = false;
 				}
 			});
 		}
 	}
-	
+
 	private class clearButton extends JButton{
 		protected clearButton(){
 			super("CLEAR");

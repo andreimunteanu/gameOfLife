@@ -21,12 +21,9 @@ public class Grid extends JPanel{
 	private int xSize;
 	private int ySize;
 	static int size = SIZE_50;
-	public boolean canClick=true;
 	private Vector<Cell> actualGeneration;
-	private Vector<Cell> clickedCells; 
-	public Grid(Vector<Cell> actualGeneration, Vector<Cell> clickedCells){
+	public Grid(Vector<Cell> actualGeneration){
 		this.actualGeneration = actualGeneration;
-		this.clickedCells = clickedCells;
 		initCells();
 		initFrame();
 	}
@@ -82,7 +79,7 @@ public class Grid extends JPanel{
 			}
 	}
 
-	public void initCells(){ 
+	private void initCells(){ // da togliere
 		cells = new Cell[size][size];
 		for(int i = 0;i < size;i++ )
 			for(int j = 0;j < size;j++)
@@ -90,24 +87,22 @@ public class Grid extends JPanel{
 	}
 
 	private void switchCell(Cell cell){
-		if(canClick)
-			clickedCells.add(cell);
+		synchronized(this){
+			int x = cell.auxGetX();
+			int y = cell.auxGetY();
+			remove(cell);
+			if(cell instanceof LivingCell){
+				cells[x][y] = new DeadCell(x,y);
+				actualGeneration.remove(cell);
+			}
+			else{
+				cells[x][y] = new LivingCell(x,y);
+				actualGeneration.add(cells[x][y]);
+			}
+			add(cells[x][y]);
+			forceUpdate();
+		}
 	}
-	/*int x = cell.auxGetX();
-		int y = cell.auxGetY();
-		remove(cell);
-		if(cell instanceof LivingCell){
-			cells[x][y] = new DeadCell(x,y);
-			actualGeneration.remove(cell);
-		}
-		else{
-			cells[x][y] = new LivingCell(x,y);
-			actualGeneration.add(cells[x][y]);
-		}
-		add(cells[x][y]);
-		//forceUpdate();
-	 */
-
 
 
 	public void addCell(Cell cell){
@@ -214,5 +209,5 @@ public class Grid extends JPanel{
 
 	public Vector<Cell> getActualGeneration() {
 		return actualGeneration;
-	}	
+	}
 }

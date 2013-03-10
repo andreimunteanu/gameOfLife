@@ -100,6 +100,7 @@ public class GameOfLife extends JFrame {
 				System.err.println("Error in setOff() => " + e.getMessage());
 			}
 			if(running){
+				actualGeneration = grid.getActualGeneration();
 				finish = false;
 				newGeneration(cleaners,generators,terminators);
 				//grid.removeCells(toTerminateCells);

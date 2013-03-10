@@ -21,9 +21,12 @@ public class Grid extends JPanel{
 	private int xSize;
 	private int ySize;
 	static int size = SIZE_50;
+	public boolean canClick=true;
 	private Vector<Cell> actualGeneration;
-	public Grid(Vector<Cell> actualGeneration){
+	private Vector<Cell> clickedCells; 
+	public Grid(Vector<Cell> actualGeneration, Vector<Cell> clickedCells){
 		this.actualGeneration = actualGeneration;
+		this.clickedCells = clickedCells;
 		initCells();
 		initFrame();
 	}
@@ -39,7 +42,7 @@ public class Grid extends JPanel{
 		//initMenu();
 		setVisible(true);
 	}
-/*
+	/*
 	private void initMenu() {
 		JMenuBar menu = new JMenuBar();
 		menu.setOpaque(true);
@@ -62,7 +65,7 @@ public class Grid extends JPanel{
 		menu.add(edit);
 		setJMenuBar(menu);
 	}
-*/
+	 */
 	public void test(){
 		for(int i=25;i < 28;i++){
 			remove(cells[25][i]);
@@ -79,7 +82,7 @@ public class Grid extends JPanel{
 			}
 	}
 
-	private void initCells(){ // da togliere
+	public void initCells(){ 
 		cells = new Cell[size][size];
 		for(int i = 0;i < size;i++ )
 			for(int j = 0;j < size;j++)
@@ -87,7 +90,10 @@ public class Grid extends JPanel{
 	}
 
 	private void switchCell(Cell cell){
-		int x = cell.auxGetX();
+		if(canClick)
+			clickedCells.add(cell);
+	}
+	/*int x = cell.auxGetX();
 		int y = cell.auxGetY();
 		remove(cell);
 		if(cell instanceof LivingCell){
@@ -100,7 +106,8 @@ public class Grid extends JPanel{
 		}
 		add(cells[x][y]);
 		//forceUpdate();
-	}
+	 */
+
 
 
 	public void addCell(Cell cell){
@@ -130,11 +137,11 @@ public class Grid extends JPanel{
 	public void resetCell(Cell cell) {
 		((DeadCell)cell).numberOfN = 0;
 	}	
-	
+
 	public int getXSize(){
 		return xSize;
 	}
-	
+
 	public int getYSize(){
 		return ySize;
 	}

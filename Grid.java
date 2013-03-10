@@ -203,5 +203,9 @@ public class Grid extends JPanel{
 
 	public void setActualGeneration(Vector<Cell> actualGeneration) {
 		this.actualGeneration = actualGeneration;
+	}
+
+	public Vector<Cell> getActualGeneration() {
+		return actualGeneration;
 	}	
 }

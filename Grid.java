@@ -179,7 +179,7 @@ public class Grid extends JPanel{
 		if(j == -1)
 			j = size -1;
 		
-		System.out.println("colonna "+i+" riga "+j);
+	//	System.out.println("colonna "+i+" riga "+j);
 		return cells[i%size][j%size];
 	}
 

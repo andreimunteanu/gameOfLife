@@ -174,7 +174,13 @@ public class Grid extends JPanel{
 	}
 
 	public Cell getCell(int i, int j) {
-		return cells[Math.abs(i) % (size - 1)][Math.abs(j) % (size - 1)];
+		if(i == -1)
+			i = size-1;
+		if(j == -1)
+			j = size -1;
+		
+		System.out.println("colonna "+i+" riga "+j);
+		return cells[i%size][j%size];
 	}
 
 	public void kill(Cell cell) {

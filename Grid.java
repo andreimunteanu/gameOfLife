@@ -13,7 +13,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 
 
-public class Grid extends JPanel{
+public class Grid extends JPanel{// nuova impostazione del thread... con dei bei bug 
 	private Cell[][] cells;
 	private final static int SIZE_50 = 50;	//variabili inutili passiamo direttamente il parametro
 	private final static int SIZE_100 = 100;	// nell'actionlistener
@@ -122,15 +122,15 @@ public class Grid extends JPanel{
 	}
 
 	public void incrementNumbOfN(Cell cell) {
-		((DeadCell)cell).numberOfN++;
+		((DeadCell)cell).increment();
 	}
 
 	public int getNumbOfN(Cell cell) {
-		return ((DeadCell)cell).numberOfN;
+		return ((DeadCell)cell).get();
 	}
 
 	public void resetCell(Cell cell) {
-		((DeadCell)cell).numberOfN = 0;
+		((DeadCell)cell).reset();
 	}	
 
 	public int getXSize(){
@@ -155,6 +155,15 @@ public class Grid extends JPanel{
 					//System.out.println("CLICK FIGGA");
 				}
 			});
+		}
+		private synchronized void increment(){
+			numberOfN++;
+		}
+		private synchronized int get(){
+			return numberOfN;
+		}
+		private synchronized void reset(){
+			numberOfN = 0;
 		}
 	}
 

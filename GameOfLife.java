@@ -11,21 +11,20 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
 
-public class GameOfLife extends JFrame {
+public class GameOfLife extends JFrame {// nuova impostazione del thread... con dei bei bug 
 	private Grid grid;
 	private boolean running = false;
 	private boolean finish = true;
-	private Integer generatorWorkingPos = 0;
-	private Integer cleanerWorkingPos = 0;
-	private Integer terminatorWorkingPos = 0;
-	private Integer runningThreads = 4;
-	private boolean initialization = true;
+	private volatile Integer workingPosition = 0;
+	private static int stage = 0;
+	private static final int CLEAN_STAGE = 0;
+	private static final int TERMINATE_STAGE = 1;
+	private static final int GENERATE_STAGE = 2;
 	private int speed = 200; //default
-	//private Cell[][] cells;
-	private  Vector<Cell> actualGeneration = new Vector<Cell>();
-	private Vector<Cell> newGeneration = new Vector<Cell>();
-	private Vector<Cell> toTerminateCells = new Vector<Cell>(); 
-	private Vector<Cell> possibleFutureGeneration = new Vector<Cell>(); 
+	private  volatile Vector<Cell> actualGeneration = new Vector<Cell>();
+	private volatile Vector<Cell> newGeneration = new Vector<Cell>();
+	private volatile Vector<Cell> toTerminateCells = new Vector<Cell>(); 
+	private volatile Vector<Cell> possibleFutureGeneration = new Vector<Cell>(); 
 
 	public static void main(String[] args) {
 		new GameOfLife();
@@ -88,11 +87,9 @@ public class GameOfLife extends JFrame {
 	}
 	 */
 	private void setOff(){
-		int coreN =2; //Runtime.getRuntime().availableProcessors();
-		Cleaner[] cleaners = new Cleaner[coreN];
-		Terminator[] terminators = new Terminator[coreN];
-		Generator[] generators = new Generator[coreN];
-		initThreads(cleaners,generators,terminators);
+		int coreN =1;//Runtime.getRuntime().availableProcessors();
+		Slave[] slaves = new Slave[coreN];
+		//initThreads(slaves);
 		//grid = new Grid(actualGeneration);
 		//	grid.forceUpdate();
 		grid.test();
@@ -114,7 +111,7 @@ public class GameOfLife extends JFrame {
 				synchronized(grid){
 					actualGeneration = grid.getActualGeneration();
 					//se l'utente clicca qui sono cazzi
-					newGeneration(cleaners,generators,terminators); //o anche durante questo
+					newGeneration(slaves); //o anche durante questo
 					actualGeneration = newGeneration;
 					grid.setActualGeneration(actualGeneration); //questo risolve il bug del CLEAR
 				}
@@ -122,80 +119,57 @@ public class GameOfLife extends JFrame {
 				toTerminateCells = new Vector<Cell>();
 				possibleFutureGeneration = new Vector<Cell>();
 				newGeneration=new Vector<Cell>();
-				//System.out.println(actualGeneration.size());
+				System.out.println(actualGeneration.size());
 				grid.forceUpdate();
 				finish = true;
 			}
 		}
 	}
 
-	private void initThreads(Cleaner[] cleaners,Generator[] generators,Terminator[] terminators){ //metodo per inizializzare le thread 
-		for(int i=0;i < cleaners.length;i++){														
-			cleaners[i] = new Cleaner();
-			generators[i] = new Generator();
-			terminators[i] = new Terminator();
-		}
-		startThreads(cleaners,cleanerWorkingPos);
-
-		//System.out.println("Cleaner done");
-
-		startThreads(generators,generatorWorkingPos);
-
-
-		startThreads(terminators, terminatorWorkingPos);
-
-		initialization = false;
-		resetPositions();
-
+	private void newGeneration(Slave[] slaves){ 
+		initThreads(slaves);
+		startThreads(slaves);
+		nextStage();
+		workingPosition=0;
+		
+		initThreads(slaves);
+		startThreads(slaves);
+		nextStage();
+		workingPosition=0;
+		System.out.println( stage+" toTerminate" + toTerminateCells.size());
+		
+		initThreads(slaves);
+		startThreads(slaves);
+		nextStage();
+		workingPosition=0;
+		System.out.println(stage +" possible" + possibleFutureGeneration.size());
+		System.out.println("newGen" + newGeneration.size());
+	}
+	
+	private void nextStage(){
+		stage = (stage + 1) % 3;
 	}
 
-	private void resetPositions() {
-		cleanerWorkingPos = 0;
-		generatorWorkingPos = 0;
-		terminatorWorkingPos = 0;
+	private void initThreads(Slave[] slaves){ //metodo per inizializzare le thread 
+		for(int i=0;i < slaves.length;i++)														
+			slaves[i] = new Slave();
 	}
 
-	private void startThreads(Thread[] slaves,Integer workingPos){
-		runningThreads = 2;
-		Synchronizer sync = new Synchronizer(workingPos); 	
+
+	private void startThreads(Slave[] slaves){
+		//		Synchronizer sync = new Synchronizer(workingPos); 	
 		for(int i=0; i < slaves.length;i++)
 			slaves[i].start();
-		sync.start();
-		try {
-			sync.join();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		for(int i=0; i < slaves.length;i++)
+			try {
+				slaves[i].join();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 	}
 
-	private void newGeneration(Cleaner[] cleaners,Generator[] generators,Terminator[] terminators){ 
-		//System.out.println(workingPosition+" "+actualGeneration.size());
-		//System.out.println(cleaners[0].getState());
-		runThreads(cleanerWorkingPos);
-		System.out.println("runTs "+runningThreads);
-
-
-		runThreads(generatorWorkingPos);
-		System.out.println("runTs "+runningThreads);
-
-		runThreads(terminatorWorkingPos);
-		System.out.println("runTs "+runningThreads);
-		resetPositions();
-	}
-
-	private void runThreads(Integer workingPos){
-		runningThreads = 2;
-		Synchronizer sync = new Synchronizer(workingPos); 
-		sync.start();
-		try {
-			sync.join();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	private class Synchronizer extends Thread{
+	/*private class Synchronizer extends Thread{
 		private Integer workingPos;
 		public Synchronizer(Integer workingPos){
 			this.workingPos=workingPos;
@@ -203,58 +177,58 @@ public class GameOfLife extends JFrame {
 		public void run(){
 			System.out.println("Syn started");
 			synchronized (workingPos){
-				if(!initialization)
-					workingPos.notifyAll();
+				//	if(!initialization)
+				workingPos.notifyAll();
 			}
 			while(true){
 				//System.out.println("syncher: thread attive" +runningThreads);
-				if(runningThreads <= 0)
-					return;
-				else
-					try {
-						sleep(40);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+				//if(runningThreads <= 0)
+				//return;
+				//else
+				try {
+					sleep(40);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		}
-	}
+	}*/
 
-	private class Cleaner extends Thread{
-		private int i;
-		private boolean work = true;
+	private class Slave extends Thread{
+
 		public void run(){
+			switch(stage){
+			case CLEAN_STAGE:clean(); break;
+			case TERMINATE_STAGE:terminate();break;
+			case GENERATE_STAGE:generate();break;
+			default: break;				
+			}
+
+		}
+		
+		private void clean(){
+			int index;
 			while(true){
-				synchronized(cleanerWorkingPos){
-					System.out.println("Cleaner "+ this.getName() +" holdsLock "+ holdsLock(cleanerWorkingPos));
-					if(cleanerWorkingPos < actualGeneration.size()){
-						work=true;
-					System.out.println("Cleaner "+ this.getName() + " in");
-						i = cleanerWorkingPos++;
+				synchronized(workingPosition){
+					System.out.println("Cleaner "+ this.getName() +" holdsLock "+ holdsLock(workingPosition));
+					if(workingPosition < actualGeneration.size()){
+						//System.out.println("Cleaner "+ this.getName() + " in");
+						index = workingPosition++;
 
 					}
 					else
-						try {
-							work=false;
-							runningThreads--;
-							//System.out.println("runningThreads " + runningThreads);
-							//System.out.println("Cleaner "+ this.getName() +" holdsLock "+ holdsLock(cleanerWorkingPos));
-
-							cleanerWorkingPos.wait();
-						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					System.out.println("Cleaner "+ this.getName() +" holdsLock "+ holdsLock(cleanerWorkingPos) +" exiting");
+						return;
+					//System.out.println("runningThreads " + runningThreads);
+					//System.out.println("Cleaner "+ this.getName() +" holdsLock "+ holdsLock(cleanerWorkingPos));
+					System.out.println("Cleaner "+ this.getName() +" holdsLock "+ holdsLock(workingPosition) +" exiting");
 				}
-				if(work)
-					upDate(i);//potrebbe esserci race condition nelle variabile newGen e deadCells sicuramente
+				upDate(index);//potrebbe esserci race condition nelle variabile newGen e deadCells sicuramente
 			}
 		}
 
 		private void upDate(int index){//race condition
-			if(actualGeneration.size() > 0 && index < actualGeneration.size()){
+			if(actualGeneration.size() > 0){
 				int aliveNeighbors = watchNeighbors(actualGeneration.get(index));
 				if(aliveNeighbors == 2 || aliveNeighbors == 3)
 					newGeneration.add(actualGeneration.get(index));
@@ -277,46 +251,33 @@ public class GameOfLife extends JFrame {
 					if((i != 0 || j != 0) && grid.isLivingCell(neighborCell))
 						count++;
 					else if(i != 0 || j != 0){
-						checkDeadCell(neighborCell);
+						watchDeadCell(neighborCell);
 					}
 				}
 
 			return count;
 		}
-		private void checkDeadCell(Cell cell){
+
+		private void watchDeadCell(Cell cell){
 			grid.incrementNumbOfN(cell);
 			if(grid.getNumbOfN(cell) == 1)
 				possibleFutureGeneration.add(cell);
 		}
-	}
 
-
-
-	private class Terminator extends Thread{
-		private int i;
-		private boolean work;
-		public void run(){
-			//System.out.println("Terminator online");
+		private void terminate(){
+			int index;
 			while(true){
-				synchronized (terminatorWorkingPos){
-					if(terminatorWorkingPos < toTerminateCells.size()){
-						work=true;
-						i = terminatorWorkingPos++;
-					} else{
-						work=false;
-						runningThreads--;
-						try {
-							terminatorWorkingPos.wait();
-						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					}	
-				}
-				if(work)
-					killCell(i);
+				synchronized (workingPosition){
+
+					if(workingPosition < toTerminateCells.size())
+						index = workingPosition++;
+					else
+						return;
+				}	
+				killCell(index);
 			}
 		}
+
 		private void killCell(int index) {
 			if(toTerminateCells.size() > 0){
 
@@ -324,30 +285,17 @@ public class GameOfLife extends JFrame {
 
 			}
 		}
-	}
 
-	private class Generator extends Thread{
-		private int i;
-		private boolean work;
-		public void run(){
-			//System.out.println("Generator online");
+		private void generate(){
+			int index;
 			while(true){
-				synchronized(generatorWorkingPos){
-					if(generatorWorkingPos < possibleFutureGeneration.size()){
-						work=true;
-						i = generatorWorkingPos++;
-					} else
-						try {
-							work=false;
-							runningThreads--;
-							generatorWorkingPos.wait();
-						} catch (InterruptedException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+				synchronized(workingPosition){
+					if(workingPosition < possibleFutureGeneration.size())
+						index = workingPosition++;
+					else
+						return;
+					checkDeadCell(index);
 				}
-				if(work)
-					checkDeadCell(i);
 			}
 		}
 
@@ -361,7 +309,8 @@ public class GameOfLife extends JFrame {
 					grid.resetCell(cell);
 			}
 		}
-	}
+	}	
+
 	private class startButton extends JButton{
 		protected startButton(){
 			super("START");

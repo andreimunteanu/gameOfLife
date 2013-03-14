@@ -13,7 +13,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 
 
-public class Grid extends JPanel{// nuova impostazione del thread... con dei bei bug 
+public class Grid extends JPanel{
 	private Cell[][] cells;
 	private final static int SIZE_50 = 50;	//variabili inutili passiamo direttamente il parametro
 	private final static int SIZE_100 = 100;	// nell'actionlistener

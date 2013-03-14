@@ -13,19 +13,21 @@ import javax.swing.JMenuItem;
 
 public class GameOfLife extends JFrame {
 	private Grid grid;
+	private int coreN = 1;
 	private boolean running = false;
 	private boolean finish = true;
+	private int nButtons = 5;
 	private Integer workingPosition = 0;
 	private static int stage = 0;
 	private static final int CLEAN_STAGE = 0;
 	private static final int TERMINATE_STAGE = 1;
 	private static final int GENERATE_STAGE = 2;
 	private int speed = 200; //default
-	private Vector<Cell> actualGeneration = new Vector<Cell>();
-	private Vector<Cell> newGeneration = new Vector<Cell>();
-	private Vector<Cell> toTerminateCells = new Vector<Cell>(); 
-	private Vector<Cell> possibleFutureGeneration = new Vector<Cell>(); 
-
+	private volatile Vector<Cell> actualGeneration = new Vector<Cell>();
+	private volatile Vector<Cell> newGeneration = new Vector<Cell>();
+	private volatile Vector<Cell> toTerminateCells = new Vector<Cell>(); 
+	private volatile Vector<Cell> possibleFutureGeneration = new Vector<Cell>(); 
+	private volatile Vector<Cell> resetGeneration = new Vector<Cell>();
 	public static void main(String[] args) {
 		new GameOfLife();
 	}
@@ -37,6 +39,8 @@ public class GameOfLife extends JFrame {
 		getContentPane().add(grid);
 		getContentPane().add(new startButton());
 		getContentPane().add(new pauseButton());
+		getContentPane().add(new stepButton());
+		getContentPane().add(new resetButton());
 		getContentPane().add(new clearButton());
 		initMenu();
 		setVisible(true);
@@ -87,7 +91,7 @@ public class GameOfLife extends JFrame {
 	}
 	 */
 	private void setOff(){
-		int coreN = 4;//Runtime.getRuntime().availableProcessors();
+		coreN = 1 ;//Runtime.getRuntime().availableProcessors();
 		Slave[] slaves = new Slave[coreN];
 		//initThreads(slaves);
 		//grid = new Grid(actualGeneration);
@@ -100,7 +104,7 @@ public class GameOfLife extends JFrame {
 				System.err.println("Error in setOff() => " + e.getMessage());
 			}
 			if(running){
-
+				System.out.println("ACTUAL = " + actualGeneration.size());
 				//grid.removeCells(toTerminateCells);
 				//grid.addCells(newGeneration);
 				//grid.forceUpdate(); //fa grid.repaint(); ogni 4 secondi (aggiustiamo poi);
@@ -118,7 +122,6 @@ public class GameOfLife extends JFrame {
 				toTerminateCells = new Vector<Cell>();
 				possibleFutureGeneration = new Vector<Cell>();
 				newGeneration=new Vector<Cell>();
-				System.out.println(actualGeneration.size());
 				grid.forceUpdate();
 				finish = true;
 			}
@@ -130,21 +133,21 @@ public class GameOfLife extends JFrame {
 		startThreads(slaves);
 		nextStage();
 		workingPosition=0;
-		
+
 		initThreads(slaves);
 		startThreads(slaves);
 		nextStage();
 		workingPosition=0;
 		System.out.println( stage+" toTerminate" + toTerminateCells.size());
-		
+
 		initThreads(slaves);
 		startThreads(slaves);
 		nextStage();
 		workingPosition=0;
 		System.out.println(stage +" possible" + possibleFutureGeneration.size());
-		System.out.println("newGen" + newGeneration.size());
+		//System.out.println("newGen" + newGeneration.size());
 	}
-	
+
 	private void nextStage(){
 		stage = (stage + 1) % 3;
 	}
@@ -205,16 +208,16 @@ public class GameOfLife extends JFrame {
 			}
 
 		}
-		
+
 		private void clean(){
 			int index;
 			while(true){
 				synchronized(GameOfLife.this){
-				//	System.out.println("Cleaner "+ this.getName() +" holdsLock "+ holdsLock(GameOfLife.this));
+					//	System.out.println("Cleaner "+ this.getName() +" holdsLock "+ holdsLock(GameOfLife.this));
 					if(workingPosition < actualGeneration.size()){
 						//System.out.println("Cleaner "+ this.getName() + " in");
 						index = workingPosition++;
-						System.out.println("Cleaner "+getName()+" index"+index);
+						//System.out.println("Cleaner "+getName()+" index"+index);
 					}
 					else
 						return;
@@ -316,11 +319,12 @@ public class GameOfLife extends JFrame {
 	private class startButton extends JButton{
 		protected startButton(){
 			super("START");
-			setBounds(0, grid.getYSize(), grid.getXSize() / 3, 3 * Cell.CELL_SIZE	);
+			setBounds(0, grid.getYSize(), grid.getXSize() / 5, 3 * Cell.CELL_SIZE	);
 			this.addActionListener(new ActionListener(){
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					running = true;
+					resetGeneration.addAll(actualGeneration);
+					running = true;					
 				}
 			});
 		}
@@ -329,7 +333,7 @@ public class GameOfLife extends JFrame {
 	private class pauseButton extends JButton{
 		protected pauseButton(){
 			super("PAUSE");
-			setBounds(grid.getXSize() / 3, grid.getYSize(), grid.getXSize() / 3, 3 * Cell.CELL_SIZE	);
+			setBounds(grid.getXSize() / nButtons, grid.getYSize(), grid.getXSize() / nButtons, 3 * Cell.CELL_SIZE	);
 			this.addActionListener(new ActionListener(){
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -339,10 +343,61 @@ public class GameOfLife extends JFrame {
 		}
 	}
 
+	private class stepButton extends JButton{
+		protected stepButton(){
+			super("STEP");
+			setBounds(2 * (grid.getXSize() / nButtons), grid.getYSize(), grid.getXSize() / nButtons, 3 * Cell.CELL_SIZE	);
+			this.addActionListener(new ActionListener(){
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					if(!running){
+						Slave[] slaves = new Slave[coreN];
+						actualGeneration = grid.getActualGeneration();
+						newGeneration(slaves);
+						actualGeneration = newGeneration;
+						grid.setActualGeneration(actualGeneration);
+						toTerminateCells = new Vector<Cell>();
+						possibleFutureGeneration = new Vector<Cell>();
+						newGeneration=new Vector<Cell>();
+						grid.forceUpdate();
+					}
+					else
+						running = false;
+				}
+			});
+		}
+	}
+
+	private class resetButton extends JButton{
+		protected resetButton(){
+			super("RESET");
+			setBounds(3 * (grid.getXSize() / nButtons), grid.getYSize(), grid.getXSize() / nButtons, 3 * Cell.CELL_SIZE	);
+			this.addActionListener(new ActionListener(){
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					boolean temp = running;
+					running = false;
+					while(!finish);
+					grid.clearGrid();
+					possibleFutureGeneration.clear();
+					newGeneration = new Vector<Cell>();
+					toTerminateCells = new Vector<Cell>();
+					actualGeneration = resetGeneration;
+					resetGeneration = new Vector<Cell>();
+					grid.setActualGeneration(actualGeneration);
+					System.out.println("ACTUAL = " + actualGeneration.size());
+					running = temp;
+					grid.forceUpdate();
+					getContentPane().repaint();
+				}
+			});
+		}
+	}
+
 	private class clearButton extends JButton{
 		protected clearButton(){
 			super("CLEAR");
-			setBounds(2 * (grid.getXSize() / 3), grid.getYSize(), grid.getXSize() / 3, 3 * Cell.CELL_SIZE	);
+			setBounds(4 * (grid.getXSize() / nButtons), grid.getYSize(), grid.getXSize() / nButtons, 3 * Cell.CELL_SIZE	);
 			this.addActionListener(new ActionListener(){
 				@Override
 				public void actionPerformed(ActionEvent e) {

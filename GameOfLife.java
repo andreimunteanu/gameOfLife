@@ -11,20 +11,20 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
 
-public class GameOfLife extends JFrame {// nuova impostazione del thread... con dei bei bug 
+public class GameOfLife extends JFrame {
 	private Grid grid;
 	private boolean running = false;
 	private boolean finish = true;
-	private volatile Integer workingPosition = 0;
+	private Integer workingPosition = 0;
 	private static int stage = 0;
 	private static final int CLEAN_STAGE = 0;
 	private static final int TERMINATE_STAGE = 1;
 	private static final int GENERATE_STAGE = 2;
 	private int speed = 200; //default
-	private  volatile Vector<Cell> actualGeneration = new Vector<Cell>();
-	private volatile Vector<Cell> newGeneration = new Vector<Cell>();
-	private volatile Vector<Cell> toTerminateCells = new Vector<Cell>(); 
-	private volatile Vector<Cell> possibleFutureGeneration = new Vector<Cell>(); 
+	private Vector<Cell> actualGeneration = new Vector<Cell>();
+	private Vector<Cell> newGeneration = new Vector<Cell>();
+	private Vector<Cell> toTerminateCells = new Vector<Cell>(); 
+	private Vector<Cell> possibleFutureGeneration = new Vector<Cell>(); 
 
 	public static void main(String[] args) {
 		new GameOfLife();
@@ -87,7 +87,7 @@ public class GameOfLife extends JFrame {// nuova impostazione del thread... con 
 	}
 	 */
 	private void setOff(){
-		int coreN =1;//Runtime.getRuntime().availableProcessors();
+		int coreN = 4;//Runtime.getRuntime().availableProcessors();
 		Slave[] slaves = new Slave[coreN];
 		//initThreads(slaves);
 		//grid = new Grid(actualGeneration);
@@ -110,8 +110,7 @@ public class GameOfLife extends JFrame {// nuova impostazione del thread... con 
 				finish = false;
 				synchronized(grid){
 					actualGeneration = grid.getActualGeneration();
-					//se l'utente clicca qui sono cazzi
-					newGeneration(slaves); //o anche durante questo
+					newGeneration(slaves);
 					actualGeneration = newGeneration;
 					grid.setActualGeneration(actualGeneration); //questo risolve il bug del CLEAR
 				}
@@ -210,8 +209,8 @@ public class GameOfLife extends JFrame {// nuova impostazione del thread... con 
 		private void clean(){
 			int index;
 			while(true){
-				synchronized(workingPosition){
-					System.out.println("Cleaner "+ this.getName() +" holdsLock "+ holdsLock(workingPosition));
+				synchronized(GameOfLife.this){
+				//	System.out.println("Cleaner "+ this.getName() +" holdsLock "+ holdsLock(GameOfLife.this));
 					if(workingPosition < actualGeneration.size()){
 						//System.out.println("Cleaner "+ this.getName() + " in");
 						index = workingPosition++;
@@ -221,7 +220,7 @@ public class GameOfLife extends JFrame {// nuova impostazione del thread... con 
 						return;
 					//System.out.println("runningThreads " + runningThreads);
 					//System.out.println("Cleaner "+ this.getName() +" holdsLock "+ holdsLock(cleanerWorkingPos));
-					System.out.println("Cleaner "+ this.getName() +" holdsLock "+ holdsLock(workingPosition) +" exiting");
+					//System.out.println("Cleaner "+ this.getName() +" holdsLock "+ holdsLock(GameOfLife.this) +" exiting");
 				}
 				upDate(index);//potrebbe esserci race condition nelle variabile newGen e deadCells sicuramente
 			}
@@ -267,7 +266,7 @@ public class GameOfLife extends JFrame {// nuova impostazione del thread... con 
 		private void terminate(){
 			int index;
 			while(true){
-				synchronized (workingPosition){
+				synchronized (GameOfLife.this){
 
 					if(workingPosition < toTerminateCells.size())
 						index = workingPosition++;
@@ -289,13 +288,16 @@ public class GameOfLife extends JFrame {// nuova impostazione del thread... con 
 		private void generate(){
 			int index;
 			while(true){
-				synchronized(workingPosition){
-					if(workingPosition < possibleFutureGeneration.size())
+				synchronized(GameOfLife.this){
+					if(workingPosition < possibleFutureGeneration.size()){
 						index = workingPosition++;
+						//System.out.println("Deadlock");
+						System.out.println("Generator "+ this.getName() +" holdsLock "+ holdsLock(GameOfLife.this));
+					}
 					else
 						return;
-					checkDeadCell(index);
 				}
+				checkDeadCell(index);
 			}
 		}
 

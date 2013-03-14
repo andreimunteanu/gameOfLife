@@ -47,7 +47,7 @@ public class GameOfLife extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		getContentPane().setLayout(null);
 		setSize(grid.getXSize(), grid.getYSize() + (8 * Cell.CELL_SIZE));
-		setResizable(false);
+		setResizable(true);
 		setLocation(10,10);
 		//addCellsToFrame();
 		//initMenu();
@@ -214,7 +214,7 @@ public class GameOfLife extends JFrame {
 					if(workingPosition < actualGeneration.size()){
 						//System.out.println("Cleaner "+ this.getName() + " in");
 						index = workingPosition++;
-
+						System.out.println("Cleaner "+getName()+" index"+index);
 					}
 					else
 						return;
@@ -292,7 +292,7 @@ public class GameOfLife extends JFrame {
 					if(workingPosition < possibleFutureGeneration.size()){
 						index = workingPosition++;
 						//System.out.println("Deadlock");
-						System.out.println("Generator "+ this.getName() +" holdsLock "+ holdsLock(GameOfLife.this));
+						//System.out.println("Generator "+ this.getName() +" holdsLock "+ holdsLock(GameOfLife.this));
 					}
 					else
 						return;

@@ -25,4 +25,10 @@ public class Cell extends JButton{
 	public int auxGetY(){
 		return y;
 	}
+	
+	@Override
+	public String toString(){
+		return "(" + auxGetX() + ", " + auxGetY() + ")";
+	}
+	
 }

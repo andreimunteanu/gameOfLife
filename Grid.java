@@ -47,14 +47,13 @@ public class Grid extends JPanel{
 		setVisible(true);
 	}
 
-	public void addCells(Vector<Cell> newCells){ //solo LivingCells!
+	public void addCells(){ //solo LivingCells!
 		synchronized(this){
-			for(Cell cell : newCells){
+			for(Cell cell : actualGeneration){
 				int x = cell.auxGetX();
 				int y = cell.auxGetY();
 				remove(cells[x][y]);
 				cells[x][y] = cell;
-				actualGeneration.add(cells[x][y]);
 				add(cells[x][y]);
 			}
 		}
@@ -230,8 +229,9 @@ public class Grid extends JPanel{
 		snapShot = actualGeneration;
 	}
 
-	public void setSnapShot(){
-		initCells();
-		addCells(snapShot);
+	public void loadSnapShot(){
+		clearGrid();
+		actualGeneration = snapShot;
+		addCells();
 	}
 }

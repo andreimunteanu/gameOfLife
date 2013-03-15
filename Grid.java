@@ -21,9 +21,16 @@ public class Grid extends JPanel{
 	private int xSize;
 	private int ySize;
 	static int size = SIZE_50;
-	private Vector<Cell> actualGeneration;
+	private Vector<Cell> actualGeneration = new Vector<Cell>();
+	private Vector<Cell> snapShot = new Vector<Cell>();
+
 	public Grid(Vector<Cell> actualGeneration){
 		this.actualGeneration = actualGeneration;
+		initCells();
+		initFrame();
+	}
+
+	public Grid(){
 		initCells();
 		initFrame();
 	}
@@ -39,30 +46,20 @@ public class Grid extends JPanel{
 		//initMenu();
 		setVisible(true);
 	}
-	/*
-	private void initMenu() {
-		JMenuBar menu = new JMenuBar();
-		menu.setOpaque(true);
-		menu.setBackground(Color.WHITE);
-		menu.setPreferredSize(new Dimension(0,20));
-		JMenu file = new JMenu("File");
-		JMenu size = new JMenu("Size");
-		JMenu edit = new JMenu("Edit");
-		JMenuItem exit = new JMenuItem("Exit");
-		JMenuItem size1 = new JMenuItem("50 x 50");
-		JMenuItem size2 = new JMenuItem("100 x 100");
-		JMenuItem size3 = new JMenuItem("200 x 200");
-		edit.add(size);
-		size.add(size1);
-		size.add(size2);
-		size.add(size3);
-		file.addSeparator();
-		file.add(exit);
-		menu.add(file);
-		menu.add(edit);
-		setJMenuBar(menu);
+
+	public void addCells(Vector<Cell> newCells){ //solo LivingCells!
+		synchronized(this){
+			for(Cell cell : newCells){
+				int x = cell.auxGetX();
+				int y = cell.auxGetY();
+				remove(cells[x][y]);
+				cells[x][y] = cell;
+				actualGeneration.add(cells[x][y]);
+				add(cells[x][y]);
+			}
+		}
 	}
-	 */
+
 	public void test(){
 		for(int i=25;i < 28;i++){
 			remove(cells[25][i]);
@@ -104,6 +101,50 @@ public class Grid extends JPanel{
 		}
 	}
 
+	public Cell getCell(int i, int j) {
+		if(i == -1)
+			i = size-1;
+		if(j == -1)
+			j = size -1;
+
+		//	System.out.println("colonna "+i+" riga "+j);
+		return cells[i%size][j%size];
+	}
+
+	public void kill(Cell cell) {
+		int x = cell.auxGetX();
+		int y = cell.auxGetY();
+		removeCell(cell);
+		cells[x][y] = new DeadCell(x,y);
+		addCell(cells[x][y]);
+	}
+
+	public Cell createLivingCell(Cell cell) {
+		int x=cell.auxGetX();
+		int y=cell.auxGetY();
+		removeCell(cell);
+		cells[x][y] = new LivingCell(x,y);
+		addCell(cells[x][y]);
+		return cells[x][y];
+	}
+
+	public void clearGrid() {
+		System.out.println("Actual Generation = " + actualGeneration.size());
+		for(Cell c : actualGeneration){
+			System.out.println("REMOVING => " + "(" + c.auxGetX() + ", " + c.auxGetY() + ")");
+			kill(c);
+		}	
+		actualGeneration = new Vector<Cell>();
+		//forceUpdate();
+	}
+
+	public void setActualGeneration(Vector<Cell> actualGeneration) {
+		this.actualGeneration = actualGeneration;
+	}
+
+	public Vector<Cell> getActualGeneration() {
+		return actualGeneration;
+	}
 
 	public void addCell(Cell cell){
 		add(cell);
@@ -141,6 +182,10 @@ public class Grid extends JPanel{
 		return ySize;
 	}
 
+	public int getGridSize(){
+		return size;
+	}
+
 	private class DeadCell extends Cell{
 		private Integer numberOfN = 0;
 		private static final long serialVersionUID = 1L;
@@ -152,7 +197,6 @@ public class Grid extends JPanel{
 				public void actionPerformed(ActionEvent e) {
 					Grid.this.switchCell(DeadCell.this);
 					System.out.println("(DEAD) CLICK ON => " + "(" + DeadCell.this.auxGetX() + ", " + DeadCell.this.auxGetY() + ")");
-					//System.out.println("CLICK FIGGA");
 				}
 			});
 		}
@@ -182,47 +226,12 @@ public class Grid extends JPanel{
 		}
 	}
 
-	public Cell getCell(int i, int j) {
-		if(i == -1)
-			i = size-1;
-		if(j == -1)
-			j = size -1;
-		
-	//	System.out.println("colonna "+i+" riga "+j);
-		return cells[i%size][j%size];
+	public void saveSnapShot() {
+		snapShot = actualGeneration;
 	}
 
-	public void kill(Cell cell) {
-		int x = cell.auxGetX();
-		int y = cell.auxGetY();
-		removeCell(cell);
-		cells[x][y] = new DeadCell(x,y);
-		addCell(cells[x][y]);
-	}
-
-	public Cell createLivingCell(Cell cell) {
-		int x=cell.auxGetX();
-		int y=cell.auxGetY();
-		removeCell(cell);
-		cells[x][y] = new LivingCell(x,y);
-		addCell(cells[x][y]);
-		return cells[x][y];
-	}
-
-	public void clearGrid() {
-		System.out.println("Actual Generation = " + actualGeneration.size());
-		for(Cell c : actualGeneration){
-			System.out.println("REMOVING => " + "(" + c.auxGetX() + ", " + c.auxGetY() + ")");
-			kill(c);
-		}		
-		//forceUpdate();
-	}
-
-	public void setActualGeneration(Vector<Cell> actualGeneration) {
-		this.actualGeneration = actualGeneration;
-	}
-
-	public Vector<Cell> getActualGeneration() {
-		return actualGeneration;
+	public void setSnapShot(){
+		initCells();
+		addCells(snapShot);
 	}
 }

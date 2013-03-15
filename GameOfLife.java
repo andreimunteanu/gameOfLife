@@ -19,7 +19,7 @@ public class GameOfLife extends JFrame {
 	private boolean finish = true;
 	private int nButtons = 5;
 	private Integer workingPosition = 0;
-	private int speed = 400; //default
+	private int speed = 100; //default
 
 	public static void main(String[] args) {
 		new GameOfLife();
@@ -102,7 +102,8 @@ public class GameOfLife extends JFrame {
 			this.addActionListener(new ActionListener(){
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					grid.saveSnapShot();
+					if(!running)
+						grid.saveSnapShot();
 					running = true;					
 				}
 			});
@@ -151,7 +152,8 @@ public class GameOfLife extends JFrame {
 				public void actionPerformed(ActionEvent e) {
 					running = false;
 					while(!finish);
-					grid.setSnapShot();
+					engine.reset();
+					grid.loadSnapShot();
 					grid.forceUpdate();
 				}
 			});

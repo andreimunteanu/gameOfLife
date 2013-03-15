@@ -133,6 +133,7 @@ public class GameOfLife extends JFrame {
 						running = false;
 
 					else{
+						engine.reset();
 						engine.computeNextGen(coreN);					
 						grid.forceUpdate();						
 					}

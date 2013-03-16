@@ -21,9 +21,16 @@ public class Grid extends JPanel{
 	private int xSize;
 	private int ySize;
 	static int size = SIZE_50;
-	private Vector<Cell> actualGeneration;
+	private Vector<Cell> actualGeneration = new Vector<Cell>();
+	private Vector<Cell> snapShot = new Vector<Cell>();
+
 	public Grid(Vector<Cell> actualGeneration){
 		this.actualGeneration = actualGeneration;
+		initCells();
+		initFrame();
+	}
+
+	public Grid(){
 		initCells();
 		initFrame();
 	}
@@ -39,30 +46,19 @@ public class Grid extends JPanel{
 		//initMenu();
 		setVisible(true);
 	}
-/*
-	private void initMenu() {
-		JMenuBar menu = new JMenuBar();
-		menu.setOpaque(true);
-		menu.setBackground(Color.WHITE);
-		menu.setPreferredSize(new Dimension(0,20));
-		JMenu file = new JMenu("File");
-		JMenu size = new JMenu("Size");
-		JMenu edit = new JMenu("Edit");
-		JMenuItem exit = new JMenuItem("Exit");
-		JMenuItem size1 = new JMenuItem("50 x 50");
-		JMenuItem size2 = new JMenuItem("100 x 100");
-		JMenuItem size3 = new JMenuItem("200 x 200");
-		edit.add(size);
-		size.add(size1);
-		size.add(size2);
-		size.add(size3);
-		file.addSeparator();
-		file.add(exit);
-		menu.add(file);
-		menu.add(edit);
-		setJMenuBar(menu);
+
+	public void addCells(){ //solo LivingCells!
+		synchronized(this){
+			for(Cell cell : actualGeneration){
+				int x = cell.auxGetX();
+				int y = cell.auxGetY();
+				remove(cells[x][y]);
+				cells[x][y] = cell;
+				add(cells[x][y]);
+			}
+		}
 	}
-*/
+
 	public void test(){
 		for(int i=25;i < 28;i++){
 			remove(cells[25][i]);
@@ -87,92 +83,31 @@ public class Grid extends JPanel{
 	}
 
 	private void switchCell(Cell cell){
-		int x = cell.auxGetX();
-		int y = cell.auxGetY();
-		remove(cell);
-		if(cell instanceof LivingCell){
-			cells[x][y] = new DeadCell(x,y);
-			actualGeneration.remove(cell);
-		}
-		else{
-			cells[x][y] = new LivingCell(x,y);
-			actualGeneration.add(cells[x][y]);
-		}
-		add(cells[x][y]);
-		//forceUpdate();
-	}
-
-
-	public void addCell(Cell cell){
-		add(cell);
-
-	}
-	public void removeCell(Cell cell){
-		remove(cell);
-	}
-
-	public void forceUpdate(){
-		repaint();
-	}
-
-	public boolean isLivingCell(Cell neighborCell) {
-		return neighborCell instanceof LivingCell;
-	}
-
-	public void incrementNumbOfN(Cell cell) {
-		((DeadCell)cell).numberOfN++;
-	}
-
-	public int getNumbOfN(Cell cell) {
-		return ((DeadCell)cell).numberOfN;
-	}
-
-	public void resetCell(Cell cell) {
-		((DeadCell)cell).numberOfN = 0;
-	}	
-	
-	public int getXSize(){
-		return xSize;
-	}
-	
-	public int getYSize(){
-		return ySize;
-	}
-
-	private class DeadCell extends Cell{
-		private Integer numberOfN = 0;
-		private static final long serialVersionUID = 1L;
-		protected DeadCell(int x, int y) {
-			super(x, y, "deadCell.gif");
-			setBackground(Color.BLACK);
-			this.addActionListener(new ActionListener(){
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					Grid.this.switchCell(DeadCell.this);
-					System.out.println("(DEAD) CLICK ON => " + "(" + DeadCell.this.auxGetX() + ", " + DeadCell.this.auxGetY() + ")");
-					//System.out.println("CLICK FIGGA");
-				}
-			});
-		}
-	}
-
-	private class LivingCell extends Cell{
-		private static final long serialVersionUID = 1L;
-		public LivingCell(int x, int y) {
-			super(x,y,"nocell.gif");
-			setBackground(new Color(192,249,242));
-			this.addActionListener(new ActionListener(){
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					Grid.this.switchCell(LivingCell.this);
-					System.out.println("(LIVING) CLICK ON => " + "(" + LivingCell.this.auxGetX() + ", " + LivingCell.this.auxGetY() + ")");
-				}
-			});
+		synchronized(this){
+			int x = cell.auxGetX();
+			int y = cell.auxGetY();
+			remove(cell);
+			if(cell instanceof LivingCell){
+				cells[x][y] = new DeadCell(x,y);
+				actualGeneration.remove(cell);
+			}
+			else{
+				cells[x][y] = new LivingCell(x,y);
+				actualGeneration.add(cells[x][y]);
+			}
+			add(cells[x][y]);
+			forceUpdate();
 		}
 	}
 
 	public Cell getCell(int i, int j) {
-		return cells[Math.abs(i) % (size - 1)][Math.abs(j) % (size - 1)];
+		if(i == -1)
+			i = size-1;
+		if(j == -1)
+			j = size -1;
+
+		//	System.out.println("colonna "+i+" riga "+j);
+		return cells[i%size][j%size];
 	}
 
 	public void kill(Cell cell) {
@@ -197,7 +132,8 @@ public class Grid extends JPanel{
 		for(Cell c : actualGeneration){
 			System.out.println("REMOVING => " + "(" + c.auxGetX() + ", " + c.auxGetY() + ")");
 			kill(c);
-		}		
+		}	
+		actualGeneration = new Vector<Cell>();
 		//forceUpdate();
 	}
 
@@ -207,5 +143,95 @@ public class Grid extends JPanel{
 
 	public Vector<Cell> getActualGeneration() {
 		return actualGeneration;
+	}
+
+	public void addCell(Cell cell){
+		add(cell);
+
+	}
+	public void removeCell(Cell cell){
+		remove(cell);
+	}
+
+	public void forceUpdate(){
+		repaint();
+	}
+
+	public boolean isLivingCell(Cell neighborCell) {
+		return neighborCell instanceof LivingCell;
+	}
+
+	public void incrementNumbOfN(Cell cell) {
+		((DeadCell)cell).increment();
+	}
+
+	public int getNumbOfN(Cell cell) {
+		return ((DeadCell)cell).get();
+	}
+
+	public void resetCell(Cell cell) {
+		((DeadCell)cell).reset();
 	}	
+
+	public int getXSize(){
+		return xSize;
+	}
+
+	public int getYSize(){
+		return ySize;
+	}
+
+	public int getGridSize(){
+		return size;
+	}
+
+	private class DeadCell extends Cell{
+		private Integer numberOfN = 0;
+		private static final long serialVersionUID = 1L;
+		protected DeadCell(int x, int y) {
+			super(x, y, "deadCell.gif");
+			setBackground(Color.BLACK);
+			this.addActionListener(new ActionListener(){
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					Grid.this.switchCell(DeadCell.this);
+					System.out.println("(DEAD) CLICK ON => " + "(" + DeadCell.this.auxGetX() + ", " + DeadCell.this.auxGetY() + ")");
+				}
+			});
+		}
+		private synchronized void increment(){
+			numberOfN++;
+		}
+		private synchronized int get(){
+			return numberOfN;
+		}
+		private synchronized void reset(){
+			numberOfN = 0;
+		}
+	}
+
+	private class LivingCell extends Cell{
+		private static final long serialVersionUID = 1L;
+		public LivingCell(int x, int y) {
+			super(x,y,"nocell.gif");
+			setBackground(new Color(192,249,242));
+			this.addActionListener(new ActionListener(){
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					Grid.this.switchCell(LivingCell.this);
+					System.out.println("(LIVING) CLICK ON => " + "(" + LivingCell.this.auxGetX() + ", " + LivingCell.this.auxGetY() + ")");
+				}
+			});
+		}
+	}
+
+	public void saveSnapShot() {
+		snapShot = actualGeneration;
+	}
+
+	public void loadSnapShot(){
+		clearGrid();
+		actualGeneration = snapShot;
+		addCells();
+	}
 }

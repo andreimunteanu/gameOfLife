@@ -15,12 +15,15 @@ import javax.swing.JPanel;
 
 public class Grid extends JPanel{
 	private Cell[][] cells;
+	private static int generation = 0;
+	private final static boolean  ALIVE = true;
+	private final static boolean DEAD = false;
 	private final static int SIZE_50 = 50;	//variabili inutili passiamo direttamente il parametro
 	private final static int SIZE_100 = 100;	// nell'actionlistener
 	private final static int SIZE_200 = 200;
 	private int xSize;
 	private int ySize;
-	static int size = SIZE_50;
+	static int size = 60;
 	private Vector<Cell> actualGeneration = new Vector<Cell>();
 	private Vector<Cell> snapShot = new Vector<Cell>();
 
@@ -60,12 +63,19 @@ public class Grid extends JPanel{
 	}
 
 	public void test(){
+		for(int i = 0;i < size;i++)
+			for(int j = 0;j < size;j++)
+				((GridCell)cells[i][j]).bringToLife();
+				
+				/*
 		for(int i=25;i < 28;i++){
-			remove(cells[25][i]);
-			cells[25][i] = new LivingCell(25,i);
-			actualGeneration.add(cells[25][i]);
-			add(cells[25][i]);
+			((GridCell)cells[25][i]).bringToLife();
+			//actualGeneration.add(cells[25][i]);
 		}
+			((GridCell)cells[26][27]).bringToLife();
+			//actualGeneration.add(cells[26][27]);
+			((GridCell)cells[27][26]).bringToLife();
+			//actualGeneration.add(cells[27][26]);*/
 	}
 
 	private void addCellsToFrame() {
@@ -75,27 +85,25 @@ public class Grid extends JPanel{
 			}
 	}
 
-	private void initCells(){ // da togliere
+	private void initCells(){ 
 		cells = new Cell[size][size];
 		for(int i = 0;i < size;i++ )
 			for(int j = 0;j < size;j++)
-				cells[i][j] = new DeadCell(i,j);
+				cells[i][j] = new GridCell(i,j);
 	}
 
 	private void switchCell(Cell cell){
 		synchronized(this){
 			int x = cell.auxGetX();
 			int y = cell.auxGetY();
-			remove(cell);
-			if(cell instanceof LivingCell){
-				cells[x][y] = new DeadCell(x,y);
-				actualGeneration.remove(cell);
+			if(cells[x][y].isLivingCell()){
+				kill(cell);
+				//actualGeneration.remove(cell);
 			}
 			else{
-				cells[x][y] = new LivingCell(x,y);
-				actualGeneration.add(cells[x][y]);
+				((GridCell)cell).bringToLife();
+				//actualGeneration.add(cell);
 			}
-			add(cells[x][y]);
 			forceUpdate();
 		}
 	}
@@ -111,20 +119,11 @@ public class Grid extends JPanel{
 	}
 
 	public void kill(Cell cell) {
-		int x = cell.auxGetX();
-		int y = cell.auxGetY();
-		removeCell(cell);
-		cells[x][y] = new DeadCell(x,y);
-		addCell(cells[x][y]);
+		((GridCell)cell).kill();
 	}
 
-	public Cell createLivingCell(Cell cell) {
-		int x=cell.auxGetX();
-		int y=cell.auxGetY();
-		removeCell(cell);
-		cells[x][y] = new LivingCell(x,y);
-		addCell(cells[x][y]);
-		return cells[x][y];
+	public void createLivingCell(Cell cell) {
+		((GridCell)cell).bringToLife();
 	}
 
 	public void clearGrid() {
@@ -145,11 +144,11 @@ public class Grid extends JPanel{
 		return actualGeneration;
 	}
 
-	public void addCell(Cell cell){
+	public void addCell(Cell cell){// dprecato
 		add(cell);
 
 	}
-	public void removeCell(Cell cell){
+	public void removeCell(Cell cell){//deprecato2
 		remove(cell);
 	}
 
@@ -158,20 +157,23 @@ public class Grid extends JPanel{
 	}
 
 	public boolean isLivingCell(Cell neighborCell) {
-		return neighborCell instanceof LivingCell;
+		return ((GridCell)neighborCell).isLivingCell();
+	}
+	public boolean isLivingCell1(Cell neighborCell) {
+		return ((GridCell)neighborCell).isLivingCell1();
 	}
 
-	public void incrementNumbOfN(Cell cell) {
-		((DeadCell)cell).increment();
+	/*public void incrementNumbOfN(Cell cell) {
+		((GridCell)cell).increment();
 	}
 
 	public int getNumbOfN(Cell cell) {
-		return ((DeadCell)cell).get();
+		return ((GridCell)cell).get();
 	}
 
 	public void resetCell(Cell cell) {
-		((DeadCell)cell).reset();
-	}	
+		((GridCell)cell).reset();
+	}	*/
 
 	public int getXSize(){
 		return xSize;
@@ -184,44 +186,48 @@ public class Grid extends JPanel{
 	public int getGridSize(){
 		return size;
 	}
+	public void nextGeneration(){
+		generation = (generation + 1) % 2;
+	}
 
-	private class DeadCell extends Cell{
-		private Integer numberOfN = 0;
+	private class GridCell extends Cell{
+		private boolean generation_0 = DEAD;
+		private boolean generation_1 = DEAD;
 		private static final long serialVersionUID = 1L;
-		protected DeadCell(int x, int y) {
-			super(x, y, "deadCell.gif");
+		protected GridCell(int x, int y) {
+			super(x, y);
 			setBackground(Color.BLACK);
 			this.addActionListener(new ActionListener(){
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					Grid.this.switchCell(DeadCell.this);
-					System.out.println("(DEAD) CLICK ON => " + "(" + DeadCell.this.auxGetX() + ", " + DeadCell.this.auxGetY() + ")");
+					Grid.this.switchCell(GridCell.this);
+					System.out.println("("+ isLivingCell()+") CLICK ON => " + "(" + GridCell.this.auxGetX() + ", " + GridCell.this.auxGetY() + ")");
 				}
 			});
+		}		
+		private void kill(){//NB gli actionListener Lavoro su actual generation mentre le thread lavorano su quella futura 
+			if(generation == 0)
+				generation_0 = DEAD;
+			else
+				generation_1 = DEAD;
+			
+			setBackground(Color.BLACK);
+				
 		}
-		private synchronized void increment(){
-			numberOfN++;
-		}
-		private synchronized int get(){
-			return numberOfN;
-		}
-		private synchronized void reset(){
-			numberOfN = 0;
-		}
-	}
-
-	private class LivingCell extends Cell{
-		private static final long serialVersionUID = 1L;
-		public LivingCell(int x, int y) {
-			super(x,y,"nocell.gif");
+		private void bringToLife(){
+			if(generation == 0)
+				generation_0 = ALIVE;
+			else
+				generation_1 = ALIVE;
+			
 			setBackground(new Color(192,249,242));
-			this.addActionListener(new ActionListener(){
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					Grid.this.switchCell(LivingCell.this);
-					System.out.println("(LIVING) CLICK ON => " + "(" + LivingCell.this.auxGetX() + ", " + LivingCell.this.auxGetY() + ")");
-				}
-			});
+		}
+		@Override 
+		public boolean isLivingCell(){
+			return generation == 1 ? generation_0 : generation_1;
+		}
+		public boolean isLivingCell1(){
+			return generation == 0 ? generation_0 : generation_1;
 		}
 	}
 

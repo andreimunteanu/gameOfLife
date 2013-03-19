@@ -87,7 +87,7 @@ public class GameOfLife extends JFrame {
 				finish = false;
 				synchronized(grid){
 					engine.reset();
-					engine.computeNextGen(coreN);					
+					engine.computeNextGen();					
 				}				
 				grid.forceUpdate();
 				finish = true;
@@ -103,7 +103,7 @@ public class GameOfLife extends JFrame {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					if(!running)
-						grid.saveSnapShot();
+					//	grid.saveSnapShot();
 					running = true;					
 				}
 			});
@@ -135,7 +135,7 @@ public class GameOfLife extends JFrame {
 
 					else{
 						engine.reset();
-						engine.computeNextGen(coreN);					
+						engine.computeNextGen();					
 						grid.forceUpdate();						
 					}
 				}

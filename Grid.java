@@ -17,6 +17,9 @@ public class Grid extends JPanel{
 	private Cell[][] cells;
 	private final static boolean ALIVE = true;
 	private final static boolean DEAD = false;
+	private static boolean killing = false;
+	private static boolean addingFigure = false;
+	private static String figureName ="";
 	private int xSize;
 	private int ySize;
 	private int size = 60; // default
@@ -29,7 +32,7 @@ public class Grid extends JPanel{
 		initCells();
 		initFrame();
 	}
-	
+
 	public void setGridSize(int newSize){
 		//serve un metodo per uccidere le cellule vive fuori dal frame
 		//quando si fa il resize in diminuire
@@ -45,7 +48,7 @@ public class Grid extends JPanel{
 			for(int j = 0;j < size;j++)
 				cells[i][j] = new GridCell(i,j);
 	}
-	
+
 	private void initFrame(){
 		setLayout(null);
 		xSize = (Cell.CELL_SIZE * size);
@@ -54,7 +57,7 @@ public class Grid extends JPanel{
 		addCellsToFrame();
 		setVisible(true);
 	}	
-	
+
 	private void addCellsToFrame() {
 		for(int i = 0;i < size;i++)
 			for(int j = 0;j < size;j++){
@@ -96,7 +99,7 @@ public class Grid extends JPanel{
 
 
 	public boolean isLivingCell(Cell neighborCell) {
-		return ((GridCell)neighborCell).isAliveNow();
+		return neighborCell.isAliveNow();
 	}
 
 	public int getXSize(){
@@ -133,6 +136,7 @@ public class Grid extends JPanel{
 	}
 
 	private class GridCell extends Cell{
+		private boolean definitelyDead = false;
 		private boolean actualGeneration = DEAD;
 		private boolean nextGeneration = DEAD;
 		private static final long serialVersionUID = 1L;
@@ -142,16 +146,27 @@ public class Grid extends JPanel{
 			this.addActionListener(new ActionListener(){
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					Grid.this.switchCell(GridCell.this);
+					if(addingFigure)
+						printFigure(GridCell.this);
+					else if(killing){
+						GridCell.this.definitelyDead = true;
+						GridCell.this.actualGeneration = DEAD;
+						GridCell.this.setBackground(Color.BLACK);
+					}
+					else{
+						if(GridCell.this.definitelyDead)
+							GridCell.this.definitelyDead = false;
+						Grid.this.switchCell(GridCell.this);
+					}
 					System.out.println("("+ isAliveNow()+") CLICK ON => " + "(" + GridCell.this.auxGetX() + ", " + GridCell.this.auxGetY() + ")");
 				}
 			});
 		}		
 
-		private void changeNow(){
-				nextGeneration = (actualGeneration)?DEAD:ALIVE;
-				actualGeneration = nextGeneration;
-				setBackground((actualGeneration)?Color.WHITE:Color.BLACK);
+		public void changeNow(){
+			nextGeneration = (actualGeneration)?DEAD:ALIVE;
+			actualGeneration = nextGeneration;
+			setBackground((actualGeneration)?Color.WHITE:Color.BLACK);
 		}
 
 		private void changeNext(){
@@ -177,10 +192,49 @@ public class Grid extends JPanel{
 
 		@Override
 		public void reset(){
+			if(definitelyDead)
+				definitelyDead = false;
 			actualGeneration = DEAD;
 			setBackground(Color.BLACK);
 		}
+		@Override
+		public boolean isDefDead(){
+			return definitelyDead;
+		}
 
+	}
+	public void setFigure(String figureName){
+		addingFigure = true;
+		killing = false;
+		this.figureName = figureName;
+	}
+
+	public void printFigure(Cell cell){
+		addingFigure = false;
+		int x = cell.auxGetX();
+		int y = cell.auxGetY();
+		int posX = 0;
+		int posY = 0;
+
+		int[][] coordinates = Figures.getCoordinates(figureName);
+		for(int[] pos : coordinates){
+			posX = pos[0];
+			posY = pos[1];
+			cell = getCell(x + posX, y + posY );
+			cell.reset();/// o faccio questo o faccio un metodo che fa quello che fanno questi 2 con qualche accorgimento, ma visto che ci sono[:
+			cell.changeNow();
+		}
+	}
+	public boolean isAddingFigure(){
+		return addingFigure;
+	}
+
+	public void stopAddingFigure(){
+		addingFigure = false;
+	}
+
+	public void setKilling(){
+		killing = (killing)? false : true;
 	}
 
 	public void clearGrid(){ 
@@ -190,7 +244,7 @@ public class Grid extends JPanel{
 	}
 
 	private void reset(Cell cell){
-		if(cell.isAliveNow())
+		if(cell.isAliveNow() || cell.isDefDead())
 			cell.reset();
 	}
 
@@ -214,5 +268,3 @@ public class Grid extends JPanel{
 		return generation;
 	}
 }
-
-

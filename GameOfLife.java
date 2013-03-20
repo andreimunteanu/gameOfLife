@@ -76,7 +76,7 @@ public class GameOfLife extends JFrame {
 		coreN = 4 ;//Runtime.getRuntime().availableProcessors();
 
 		grid.test();
-		
+
 		while(true){
 			try {
 				Thread.sleep(speed);
@@ -102,9 +102,11 @@ public class GameOfLife extends JFrame {
 			this.addActionListener(new ActionListener(){
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					if(!running)
-					//	grid.saveSnapShot();
-					running = true;					
+					if(!running){
+						//	grid.saveSnapShot();
+						grid.resetGeneration();
+						running = true;
+					}
 				}
 			});
 		}
@@ -152,7 +154,6 @@ public class GameOfLife extends JFrame {
 				public void actionPerformed(ActionEvent e) {
 					running = false;
 					while(!finish);
-					engine.reset();
 					grid.loadSnapShot();
 					grid.forceUpdate();
 				}
@@ -169,7 +170,6 @@ public class GameOfLife extends JFrame {
 				public void actionPerformed(ActionEvent e) {
 					running = false;
 					while(!finish);
-					engine.reset();
 					grid.clearGrid();
 					grid.forceUpdate();
 				}

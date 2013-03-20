@@ -8,7 +8,6 @@ import javax.swing.JButton;
 
 //Adesso che abbiamo un tipo solo di cellula è ora di mandare in pensione questo file
 //così la smettiamo con tutti quei cast inutili in Grid
-// amen fratello
 public abstract class Cell extends JButton{
 	private int x;
 	private int y;
@@ -33,6 +32,7 @@ public abstract class Cell extends JButton{
 	public abstract boolean isAliveNow();
 	public abstract boolean isAliveNext();
 	public abstract void swap();
+	public abstract void reset();
 
 	@Override
 	public String toString(){

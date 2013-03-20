@@ -17,54 +17,44 @@ public class Grid extends JPanel{
 	private Cell[][] cells;
 	private final static boolean ALIVE = true;
 	private final static boolean DEAD = false;
-	private final static int SIZE_50 = 50;	//variabili inutili passiamo direttamente il parametro
-	private final static int SIZE_100 = 100;	// nell'actionlistener
-	private final static int SIZE_200 = 200;
 	private int xSize;
 	private int ySize;
-	static int size = 60;
+	private int size = 60; // default
 	private Vector<Cell> snapShot = new Vector<Cell>();
 	private Vector<Cell> changedCells = new Vector<Cell>();
 	private int generation = 0;
 
-	public Grid(){
+	public Grid(int size){
+		this.size = size;
 		initCells();
 		initFrame();
 	}
+	
+	public void setGridSize(int newSize){
+		//serve un metodo per uccidere le cellule vive fuori dal frame
+		//quando si fa il resize in diminuire
+		size = newSize;
+		xSize = (Cell.CELL_SIZE * size);
+		ySize = (Cell.CELL_SIZE * size);
+		setSize(xSize,ySize);
+	}
 
+	private void initCells(){ 
+		cells = new Cell[size][size];
+		for(int i = 0;i < size;i++ )
+			for(int j = 0;j < size;j++)
+				cells[i][j] = new GridCell(i,j);
+	}
+	
 	private void initFrame(){
-		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLayout(null);
 		xSize = (Cell.CELL_SIZE * size);
 		ySize = (Cell.CELL_SIZE * size);
 		setSize(xSize,ySize);
-		//setResizable(false);
 		addCellsToFrame();
-		//initMenu();
 		setVisible(true);
-	}
-
-	public void test(){
-		for(int i = 0;i < size;i++)
-			for(int j = 0;j < size;j++)
-				((GridCell)cells[i][j]).changeNext();
-
-		for(int i = 0;i < size;i++)
-			for(int j = 0;j < size;j++)
-				((GridCell)cells[i][j]).swap();
-
-		nextGeneration();
-		/*
-		for(int i=25;i < 28;i++){
-			((GridCell)cells[25][i]).bringToLife();
-			//actualGeneration.add(cells[25][i]);
-		}
-			((GridCell)cells[26][27]).bringToLife();
-			//actualGeneration.add(cells[26][27]);
-			((GridCell)cells[27][26]).bringToLife();
-			//actualGeneration.add(cells[27][26]);*/
-	}
-
+	}	
+	
 	private void addCellsToFrame() {
 		for(int i = 0;i < size;i++)
 			for(int j = 0;j < size;j++){
@@ -77,13 +67,6 @@ public class Grid extends JPanel{
 			for(int j = 0;j < size;j++){
 				remove(cells[i][j]);
 			}		
-	}
-
-	private void initCells(){ 
-		cells = new Cell[size][size];
-		for(int i = 0;i < size;i++ )
-			for(int j = 0;j < size;j++)
-				cells[i][j] = new GridCell(i,j);
 	}
 
 	private void switchCell(Cell cell){
@@ -99,7 +82,6 @@ public class Grid extends JPanel{
 		if(j == -1)
 			j = size -1;
 
-		//	System.out.println("colonna "+i+" riga "+j);
 		return cells[i%size][j%size];
 	}
 
@@ -112,26 +94,10 @@ public class Grid extends JPanel{
 		repaint();
 	}
 
-	public void swapNextGeneration(){
-
-	}
-
 
 	public boolean isLivingCell(Cell neighborCell) {
 		return ((GridCell)neighborCell).isAliveNow();
 	}
-
-	/*public void incrementNumbOfN(Cell cell) {
-		((GridCell)cell).increment();
-	}
-
-	public int getNumbOfN(Cell cell) {
-		return ((GridCell)cell).get();
-	}
-
-	public void resetCell(Cell cell) {
-		((GridCell)cell).reset();
-	}	*/
 
 	public int getXSize(){
 		return xSize;
@@ -146,7 +112,6 @@ public class Grid extends JPanel{
 	}
 
 	public void nextGeneration(){
-		System.out.println(generation);
 		generation++;
 
 		if(generation == 1){
@@ -218,7 +183,7 @@ public class Grid extends JPanel{
 
 	}
 
-	public void clearGrid(){ //pesantissimo, bisogna pensare a qualcos'altro
+	public void clearGrid(){ 
 		for(int i = 0;i < size;i++)
 			for(int j = 0;j < size;j++)
 				reset(cells[i][j]);
@@ -237,10 +202,17 @@ public class Grid extends JPanel{
 			int y = cell.auxGetY();
 			((GridCell)cells[x][y]).changeNow();
 		}
+		resetGeneration();
 	}
 
 	public void resetGeneration() {
 		snapShot = new Vector<Cell>();
 		generation = 0;		
 	}
+
+	public int getGeneration() {
+		return generation;
+	}
 }
+
+

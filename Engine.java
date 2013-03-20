@@ -2,7 +2,7 @@ import java.util.Vector;
 
 
 public class Engine {
-	private boolean debug = true;  //prova ad abilitare il debug :D
+	private boolean debug = false;  //prova ad abilitare il debug :D
 	private Grid grid;
 	private Vector<Cell> actualGeneration = new Vector<Cell>();
 	private Vector<Cell> nextGeneration = new Vector<Cell>();
@@ -13,13 +13,6 @@ public class Engine {
 
 	public Engine(Grid grid){
 		this.grid = grid;
-	}
-
-	public void reset(){
-		//grid.setActualGeneration(actualGeneration);
-		actualGeneration = new Vector<Cell>();
-		nextGeneration = new Vector<Cell>();
-		maybeNext = new Vector<Cell>();
 	}
 
 	public void computeNextGen() {
@@ -76,7 +69,7 @@ public class Engine {
 				count = watchNeighbors(cell);
 				if((cell.isAliveNow() && !(count == 3 || count == 2)) || (!cell.isAliveNow() && count == 3)) {
 					grid.changeState(cell);
-					System.out.println("Cell " + cell +" is ALIVE => " + cell.isAliveNow() + " count = " + count);	
+					//System.out.println("Cell " + cell +" is ALIVE => " + cell.isAliveNow() + " count = " + count);	
 				}
 				/*
 				else if(cell.isAliveNow() && (count == 3 || count == 2)) //??

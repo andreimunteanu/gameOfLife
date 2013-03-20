@@ -9,6 +9,7 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JTextArea;
 
 
 public class GameOfLife extends JFrame {
@@ -18,39 +19,86 @@ public class GameOfLife extends JFrame {
 	private boolean running = false;
 	private boolean finish = true;
 	private int nButtons = 5;
-	private Integer workingPosition = 0;
+	private Integer workingPosition = 0;// serve ancora?? NO :D
 	private int speed = 100; //default
+	private JMenuBar menu;
+	private JTextArea textGen;
+	private startButton Start;
+	private pauseButton Pause;
+	private stepButton Step;
+	private resetButton Reset;
+	private clearButton Clear;
+	private int initialSize =  60 * Cell.CELL_SIZE;
 
 	public static void main(String[] args) {
 		new GameOfLife();
 	}
 
 	public GameOfLife(){
-		grid = new Grid();
+		grid = new Grid(80);
 		engine = new Engine(grid);
 		initFrame();
-		getContentPane().add(grid);
-		getContentPane().add(new startButton());
-		getContentPane().add(new pauseButton());
-		getContentPane().add(new stepButton());
-		getContentPane().add(new resetButton());
-		getContentPane().add(new clearButton());
-		initMenu();
-		setVisible(true);
 		setOff();
 	}
 
 	private void initFrame(){
+		Start = new startButton();
+		Pause = new pauseButton();
+		Step = new stepButton();
+		Reset = new resetButton();
+		Clear = new clearButton();
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		getContentPane().setLayout(null);
+		setSize(initialSize, initialSize + (8 * Cell.CELL_SIZE));
+		setResizable(true);
+		
+		setLocation(10,10);
+		getContentPane().add(grid);
+		getContentPane().add(Start);
+		getContentPane().add(Pause);
+		getContentPane().add(Step);
+		getContentPane().add(Reset);
+		getContentPane().add(Clear);
+		initMenu();
+		resizeGame(40);
+		setVisible(true);
+	}
+
+	private void removeFrame(){
+		getContentPane().remove(grid);
+		getContentPane().remove(Start);
+		getContentPane().remove(Pause);
+		getContentPane().remove(Step);
+		getContentPane().remove(Reset);
+		getContentPane().remove(Clear);
+		getContentPane().repaint();
+	}
+
+	private void die(){
+		System.exit(0);
+	}
+
+	private void resizeGame(int size){
+		grid.setGridSize(size);
 		setSize(grid.getXSize(), grid.getYSize() + (8 * Cell.CELL_SIZE));
 		setResizable(true);
 		setLocation(10,10);
+		resizeButtons(size);
+		grid.forceUpdate();
+		getContentPane().repaint();
 	}
 
+	private void resizeButtons(int size) {
+		int newSize = Cell.CELL_SIZE * size;
+		Start.setBounds(0, newSize, newSize / 5, 3 * Cell.CELL_SIZE	);
+		Pause.setBounds(newSize / nButtons, newSize, newSize / nButtons, 3 * Cell.CELL_SIZE	);
+		Step.setBounds(2 * (newSize  / nButtons), newSize , newSize  / nButtons, 3 * Cell.CELL_SIZE	);
+		Reset.setBounds(3 * (newSize  / nButtons), newSize , newSize  / nButtons, 3 * Cell.CELL_SIZE	);
+		Clear.setBounds(4 * (newSize  / nButtons), newSize , newSize  / nButtons, 3 * Cell.CELL_SIZE	);
+	}
 
 	private void initMenu() {
-		JMenuBar menu = new JMenuBar();
+		menu = new JMenuBar();
 		menu.setOpaque(true);
 		menu.setBackground(Color.WHITE);
 		menu.setPreferredSize(new Dimension(0,20));
@@ -58,9 +106,38 @@ public class GameOfLife extends JFrame {
 		JMenu size = new JMenu("Size");
 		JMenu edit = new JMenu("Edit");
 		JMenuItem exit = new JMenuItem("Exit");
-		JMenuItem size1 = new JMenuItem("50 x 50");
-		JMenuItem size2 = new JMenuItem("100 x 100");
-		JMenuItem size3 = new JMenuItem("200 x 200");
+		JMenuItem size1 = new JMenuItem("40 x 40");
+		JMenuItem size2 = new JMenuItem("60 x 60");
+		JMenuItem size3 = new JMenuItem("80 x 80");
+		textGen = new JTextArea(); // bisogna trovare un modo per allinearla a destra
+		textGen.setEditable(false);
+		exit.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				GameOfLife.this.die();
+			} });
+
+		size1.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				GameOfLife.this.resizeGame(40);				
+			}			
+		});
+
+		size2.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				GameOfLife.this.resizeGame(60);				
+			}			
+		});
+
+		size3.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				GameOfLife.this.resizeGame(80);				
+			}			
+		});
+
 		edit.add(size);
 		size.add(size1);
 		size.add(size2);
@@ -69,15 +146,17 @@ public class GameOfLife extends JFrame {
 		file.add(exit);
 		menu.add(file);
 		menu.add(edit);
+		menu.add(textGen);
 		setJMenuBar(menu);
 	}
 
 	private void setOff(){
 		coreN = 4 ;//Runtime.getRuntime().availableProcessors();
-
-		grid.test();
-		
 		while(true){
+			String spaces = "        ";
+			for(int i = 0;i < (grid.getXSize() / Cell.CELL_SIZE);i++)
+				spaces += " ";
+			textGen.setText(spaces + "Gen " + grid.getGeneration());
 			try {
 				Thread.sleep(speed);
 			} catch (InterruptedException e) {
@@ -86,10 +165,11 @@ public class GameOfLife extends JFrame {
 			if(running){
 				finish = false;
 				synchronized(grid){
-					engine.reset();
-					engine.computeNextGen(coreN);					
+					engine.computeNextGen();					
 				}				
+				menu.repaint();
 				grid.forceUpdate();
+
 				finish = true;
 			}
 		}
@@ -102,9 +182,11 @@ public class GameOfLife extends JFrame {
 			this.addActionListener(new ActionListener(){
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					if(!running)
-						grid.saveSnapShot();
-					running = true;					
+					if(!running){
+						//	grid.saveSnapShot();
+						grid.resetGeneration();
+						running = true;
+					}
 				}
 			});
 		}
@@ -134,8 +216,7 @@ public class GameOfLife extends JFrame {
 						running = false;
 
 					else{
-						engine.reset();
-						engine.computeNextGen(coreN);					
+						engine.computeNextGen();					
 						grid.forceUpdate();						
 					}
 				}
@@ -152,7 +233,6 @@ public class GameOfLife extends JFrame {
 				public void actionPerformed(ActionEvent e) {
 					running = false;
 					while(!finish);
-					engine.reset();
 					grid.loadSnapShot();
 					grid.forceUpdate();
 				}
@@ -169,11 +249,13 @@ public class GameOfLife extends JFrame {
 				public void actionPerformed(ActionEvent e) {
 					running = false;
 					while(!finish);
-					engine.reset();
 					grid.clearGrid();
+					grid.resetGeneration();
 					grid.forceUpdate();
 				}
 			});
 		}
 	}
 }
+
+

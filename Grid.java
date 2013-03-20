@@ -15,59 +15,46 @@ import javax.swing.JPanel;
 
 public class Grid extends JPanel{
 	private Cell[][] cells;
-	private final static int SIZE_50 = 50;	//variabili inutili passiamo direttamente il parametro
-	private final static int SIZE_100 = 100;	// nell'actionlistener
-	private final static int SIZE_200 = 200;
+	private final static boolean ALIVE = true;
+	private final static boolean DEAD = false;
 	private int xSize;
 	private int ySize;
-	static int size = SIZE_50;
-	private Vector<Cell> actualGeneration = new Vector<Cell>();
+	private int size = 60; // default
 	private Vector<Cell> snapShot = new Vector<Cell>();
+	private Vector<Cell> changedCells = new Vector<Cell>();
+	private int generation = 0;
 
-	public Grid(Vector<Cell> actualGeneration){
-		this.actualGeneration = actualGeneration;
+	public Grid(int size){
+		this.size = size;
 		initCells();
 		initFrame();
 	}
-
-	public Grid(){
-		initCells();
-		initFrame();
+	
+	public void setGridSize(int newSize){
+		//serve un metodo per uccidere le cellule vive fuori dal frame
+		//quando si fa il resize in diminuire
+		size = newSize;
+		xSize = (Cell.CELL_SIZE * size);
+		ySize = (Cell.CELL_SIZE * size);
+		setSize(xSize,ySize);
 	}
 
+	private void initCells(){ 
+		cells = new Cell[size][size];
+		for(int i = 0;i < size;i++ )
+			for(int j = 0;j < size;j++)
+				cells[i][j] = new GridCell(i,j);
+	}
+	
 	private void initFrame(){
-		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setLayout(null);
 		xSize = (Cell.CELL_SIZE * size);
 		ySize = (Cell.CELL_SIZE * size);
 		setSize(xSize,ySize);
-		//setResizable(false);
 		addCellsToFrame();
-		//initMenu();
 		setVisible(true);
-	}
-
-	public void addCells(){ //solo LivingCells!
-		synchronized(this){
-			for(Cell cell : actualGeneration){
-				int x = cell.auxGetX();
-				int y = cell.auxGetY();
-				remove(cells[x][y]);
-				cells[x][y] = cell;
-				add(cells[x][y]);
-			}
-		}
-	}
-
-	public void test(){
-		for(int i=25;i < 28;i++){
-			remove(cells[25][i]);
-			cells[25][i] = new LivingCell(25,i);
-			actualGeneration.add(cells[25][i]);
-			add(cells[25][i]);
-		}
-	}
-
+	}	
+	
 	private void addCellsToFrame() {
 		for(int i = 0;i < size;i++)
 			for(int j = 0;j < size;j++){
@@ -75,27 +62,16 @@ public class Grid extends JPanel{
 			}
 	}
 
-	private void initCells(){ // da togliere
-		cells = new Cell[size][size];
-		for(int i = 0;i < size;i++ )
-			for(int j = 0;j < size;j++)
-				cells[i][j] = new DeadCell(i,j);
+	private void removeCellsFromFrame(){
+		for(int i = 0;i < size;i++)
+			for(int j = 0;j < size;j++){
+				remove(cells[i][j]);
+			}		
 	}
 
 	private void switchCell(Cell cell){
 		synchronized(this){
-			int x = cell.auxGetX();
-			int y = cell.auxGetY();
-			remove(cell);
-			if(cell instanceof LivingCell){
-				cells[x][y] = new DeadCell(x,y);
-				actualGeneration.remove(cell);
-			}
-			else{
-				cells[x][y] = new LivingCell(x,y);
-				actualGeneration.add(cells[x][y]);
-			}
-			add(cells[x][y]);
+			((GridCell)cell).changeNow();
 			forceUpdate();
 		}
 	}
@@ -106,72 +82,22 @@ public class Grid extends JPanel{
 		if(j == -1)
 			j = size -1;
 
-		//	System.out.println("colonna "+i+" riga "+j);
 		return cells[i%size][j%size];
 	}
 
-	public void kill(Cell cell) {
-		int x = cell.auxGetX();
-		int y = cell.auxGetY();
-		removeCell(cell);
-		cells[x][y] = new DeadCell(x,y);
-		addCell(cells[x][y]);
-	}
-
-	public Cell createLivingCell(Cell cell) {
-		int x=cell.auxGetX();
-		int y=cell.auxGetY();
-		removeCell(cell);
-		cells[x][y] = new LivingCell(x,y);
-		addCell(cells[x][y]);
-		return cells[x][y];
-	}
-
-	public void clearGrid() {
-		System.out.println("Actual Generation = " + actualGeneration.size());
-		for(Cell c : actualGeneration){
-			System.out.println("REMOVING => " + "(" + c.auxGetX() + ", " + c.auxGetY() + ")");
-			kill(c);
-		}	
-		actualGeneration = new Vector<Cell>();
-		//forceUpdate();
-	}
-
-	public void setActualGeneration(Vector<Cell> actualGeneration) {
-		this.actualGeneration = actualGeneration;
-	}
-
-	public Vector<Cell> getActualGeneration() {
-		return actualGeneration;
-	}
-
-	public void addCell(Cell cell){
-		add(cell);
-
-	}
-	public void removeCell(Cell cell){
-		remove(cell);
+	public void changeState(Cell cell){
+		changedCells.add(cell);
+		((GridCell)cell).changeNext();
 	}
 
 	public void forceUpdate(){
 		repaint();
 	}
 
+
 	public boolean isLivingCell(Cell neighborCell) {
-		return neighborCell instanceof LivingCell;
+		return ((GridCell)neighborCell).isAliveNow();
 	}
-
-	public void incrementNumbOfN(Cell cell) {
-		((DeadCell)cell).increment();
-	}
-
-	public int getNumbOfN(Cell cell) {
-		return ((DeadCell)cell).get();
-	}
-
-	public void resetCell(Cell cell) {
-		((DeadCell)cell).reset();
-	}	
 
 	public int getXSize(){
 		return xSize;
@@ -185,53 +111,108 @@ public class Grid extends JPanel{
 		return size;
 	}
 
-	private class DeadCell extends Cell{
-		private Integer numberOfN = 0;
+	public void nextGeneration(){
+		generation++;
+
+		if(generation == 1){
+			System.out.println("Sono1");
+			for(Cell[] c : cells){
+				for(Cell cell : c)
+					if(((GridCell)cell).isAliveNow())
+						snapShot.add(cell);
+			}
+		}
+
+		synchronized(this){
+			for(Cell cell : changedCells)
+				((GridCell)cell).swap();
+		}
+
+		changedCells = new Vector<Cell>();
+		forceUpdate();
+	}
+
+	private class GridCell extends Cell{
+		private boolean actualGeneration = DEAD;
+		private boolean nextGeneration = DEAD;
 		private static final long serialVersionUID = 1L;
-		protected DeadCell(int x, int y) {
-			super(x, y, "deadCell.gif");
+		protected GridCell(int x, int y) {
+			super(x, y);
 			setBackground(Color.BLACK);
 			this.addActionListener(new ActionListener(){
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					Grid.this.switchCell(DeadCell.this);
-					System.out.println("(DEAD) CLICK ON => " + "(" + DeadCell.this.auxGetX() + ", " + DeadCell.this.auxGetY() + ")");
+					Grid.this.switchCell(GridCell.this);
+					System.out.println("("+ isAliveNow()+") CLICK ON => " + "(" + GridCell.this.auxGetX() + ", " + GridCell.this.auxGetY() + ")");
 				}
 			});
+		}		
+
+		private void changeNow(){
+				nextGeneration = (actualGeneration)?DEAD:ALIVE;
+				actualGeneration = nextGeneration;
+				setBackground((actualGeneration)?Color.WHITE:Color.BLACK);
 		}
-		private synchronized void increment(){
-			numberOfN++;
+
+		private void changeNext(){
+			nextGeneration = (actualGeneration)?DEAD:ALIVE;
 		}
-		private synchronized int get(){
-			return numberOfN;
+
+		@Override
+		public boolean isAliveNow(){
+			return actualGeneration;
 		}
-		private synchronized void reset(){
-			numberOfN = 0;
+
+		@Override
+		public boolean isAliveNext(){
+			return nextGeneration;
 		}
+		@Override
+		public void swap() {//fai modifica solo se necessario
+			if(nextGeneration != actualGeneration){
+				actualGeneration = nextGeneration;
+				setBackground((nextGeneration)?Color.WHITE:Color.BLACK);	
+			}
+		}
+
+		@Override
+		public void reset(){
+			actualGeneration = DEAD;
+			setBackground(Color.BLACK);
+		}
+
 	}
 
-	private class LivingCell extends Cell{
-		private static final long serialVersionUID = 1L;
-		public LivingCell(int x, int y) {
-			super(x,y,"nocell.gif");
-			setBackground(new Color(192,249,242));
-			this.addActionListener(new ActionListener(){
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					Grid.this.switchCell(LivingCell.this);
-					System.out.println("(LIVING) CLICK ON => " + "(" + LivingCell.this.auxGetX() + ", " + LivingCell.this.auxGetY() + ")");
-				}
-			});
-		}
+	public void clearGrid(){ 
+		for(int i = 0;i < size;i++)
+			for(int j = 0;j < size;j++)
+				reset(cells[i][j]);
 	}
 
-	public void saveSnapShot() {
-		snapShot = actualGeneration;
+	private void reset(Cell cell){
+		if(cell.isAliveNow())
+			cell.reset();
 	}
+
 
 	public void loadSnapShot(){
 		clearGrid();
-		actualGeneration = snapShot;
-		addCells();
+		for(Cell cell : snapShot){
+			int x = cell.auxGetX();
+			int y = cell.auxGetY();
+			((GridCell)cells[x][y]).changeNow();
+		}
+		resetGeneration();
+	}
+
+	public void resetGeneration() {
+		snapShot = new Vector<Cell>();
+		generation = 0;		
+	}
+
+	public int getGeneration() {
+		return generation;
 	}
 }
+
+

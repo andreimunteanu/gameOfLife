@@ -18,8 +18,8 @@ public class GameOfLife extends JFrame {
 	private boolean running = false;
 	private boolean finish = true;
 	private int nButtons = 5;
-	private Integer workingPosition = 0;
-	private int speed = 100; //default
+	private Integer workingPosition = 0;// serve ancora??
+	private int speed = 400; //default
 
 	public static void main(String[] args) {
 		new GameOfLife();
@@ -86,7 +86,6 @@ public class GameOfLife extends JFrame {
 			if(running){
 				finish = false;
 				synchronized(grid){
-					engine.reset();
 					engine.computeNextGen();					
 				}				
 				grid.forceUpdate();
@@ -136,7 +135,6 @@ public class GameOfLife extends JFrame {
 						running = false;
 
 					else{
-						engine.reset();
 						engine.computeNextGen();					
 						grid.forceUpdate();						
 					}

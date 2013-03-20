@@ -47,7 +47,7 @@ public class Engine {
 			}
 		}
 	}
-	
+
 	private class Slave extends Thread{
 
 		public void run(){
@@ -67,21 +67,13 @@ public class Engine {
 			while(y < grid.getGridSize()){
 				//	System.out.println(x +"  "+ y);
 				Cell cell = grid.getCell(x, y);
-				count = watchNeighbors(cell);
-				if((cell.isAliveNow() && !(count == 3 || count == 2)) || (!cell.isAliveNow() && count == 3)) {
-					grid.changeState(cell);
-					//System.out.println("Cell " + cell +" is ALIVE => " + cell.isAliveNow() + " count = " + count);	
+				if(!cell.isDefDead()){
+					count = watchNeighbors(cell);
+					if((cell.isAliveNow() && !(count == 3 || count == 2)) || (!cell.isAliveNow() && count == 3)) {
+						grid.changeState(cell);
+						//System.out.println("Cell " + cell +" is ALIVE => " + cell.isAliveNow() + " count = " + count);	
+					}
 				}
-				/*
-				else if(cell.isAliveNow() && (count == 3 || count == 2)) //??
-					grid.createLivingCell(cell);
-				
-				else if(!cell.isAliveNow() && count == 3)
-					grid.createLivingCell(cell);
-				
-				else if(!cell.isAliveNow() && count != 3) //??
-					grid.kill(cell);
-					*/
 				y++;
 			}
 		}
@@ -105,4 +97,3 @@ public class Engine {
 	}
 
 }
-

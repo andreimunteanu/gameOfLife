@@ -29,8 +29,10 @@ public abstract class Cell extends JButton{
 
 	public abstract boolean isAliveNow();
 	public abstract boolean isAliveNext();
+	public abstract void changeNow();
 	public abstract void swap();
 	public abstract void reset();
+	public abstract boolean isDefDead(); 
 
 	@Override
 	public String toString(){

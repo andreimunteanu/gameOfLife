@@ -6,8 +6,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
 
-//Adesso che abbiamo un tipo solo di cellula è ora di mandare in pensione questo file
-//così la smettiamo con tutti quei cast inutili in Grid
 public abstract class Cell extends JButton{
 	private int x;
 	private int y;

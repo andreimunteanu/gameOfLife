@@ -23,15 +23,9 @@ public class Grid extends JPanel{
 	private int xSize;
 	private int ySize;
 	static int size = 60;
-	private Vector<Cell> actualGeneration = new Vector<Cell>();
 	private Vector<Cell> snapShot = new Vector<Cell>();
 	private Vector<Cell> changedCells = new Vector<Cell>();
 	private int generation = 0;
-	public Grid(Vector<Cell> actualGeneration){
-		this.actualGeneration = actualGeneration;
-		initCells();
-		initFrame();
-	}
 
 	public Grid(){
 		initCells();
@@ -77,7 +71,7 @@ public class Grid extends JPanel{
 				add(cells[i][j]);
 			}
 	}
-	
+
 	private void removeCellsFromFrame(){
 		for(int i = 0;i < size;i++)
 			for(int j = 0;j < size;j++){
@@ -150,11 +144,13 @@ public class Grid extends JPanel{
 	public int getGridSize(){
 		return size;
 	}
-	
+
 	public void nextGeneration(){
+		System.out.println(generation);
 		generation++;
-		
+
 		if(generation == 1){
+			System.out.println("Sono1");
 			for(Cell[] c : cells){
 				for(Cell cell : c)
 					if(((GridCell)cell).isAliveNow())
@@ -166,7 +162,7 @@ public class Grid extends JPanel{
 			for(Cell cell : changedCells)
 				((GridCell)cell).swap();
 		}
-		
+
 		changedCells = new Vector<Cell>();
 		forceUpdate();
 	}
@@ -188,33 +184,49 @@ public class Grid extends JPanel{
 		}		
 
 		private void changeNow(){
-			nextGeneration = (actualGeneration)?DEAD:ALIVE;
-			actualGeneration = nextGeneration;
-			setBackground((actualGeneration)?Color.WHITE:Color.BLACK);
+				nextGeneration = (actualGeneration)?DEAD:ALIVE;
+				actualGeneration = nextGeneration;
+				setBackground((actualGeneration)?Color.WHITE:Color.BLACK);
 		}
 
 		private void changeNext(){
 			nextGeneration = (actualGeneration)?DEAD:ALIVE;
 		}
 
+		@Override
 		public boolean isAliveNow(){
 			return actualGeneration;
 		}
 
+		@Override
 		public boolean isAliveNext(){
 			return nextGeneration;
 		}
-
-		public void swap() {
-			actualGeneration = nextGeneration;
-			setBackground((nextGeneration)?Color.WHITE:Color.BLACK);		
+		@Override
+		public void swap() {//fai modifica solo se necessario
+			if(nextGeneration != actualGeneration){
+				actualGeneration = nextGeneration;
+				setBackground((nextGeneration)?Color.WHITE:Color.BLACK);	
+			}
 		}
+
+		@Override
+		public void reset(){
+			actualGeneration = DEAD;
+			setBackground(Color.BLACK);
+		}
+
 	}
-	
+
 	public void clearGrid(){ //pesantissimo, bisogna pensare a qualcos'altro
-		removeCellsFromFrame();
-		initCells();
-		addCellsToFrame();
+		for(int i = 0;i < size;i++)
+			for(int j = 0;j < size;j++)
+				reset(cells[i][j]);
+	}
+
+	private void reset(Cell cell){
+		if(cell.isAliveNow())
+			cell.reset();
 	}
 
 

@@ -153,7 +153,10 @@ public class GameOfLife extends JFrame {
 	private void setOff(){
 		coreN = 4 ;//Runtime.getRuntime().availableProcessors();
 		while(true){
-			textGen.setText("Gen " + grid.getGeneration());
+			String spaces = "        ";
+			for(int i = 0;i < (grid.getXSize() / Cell.CELL_SIZE);i++)
+				spaces += " ";
+			textGen.setText(spaces + "Gen " + grid.getGeneration());
 			try {
 				Thread.sleep(speed);
 			} catch (InterruptedException e) {

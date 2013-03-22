@@ -80,12 +80,10 @@ public class Grid extends JPanel{
 	}
 
 	public Cell getCell(int i, int j) {
-		if(i == -1)
-			i = size-1;
-		if(j == -1)
-			j = size -1;
-
-		return cells[i%size][j%size];
+		i = (i < 0)?(size + i):(i % size);
+		j = (j < 0)?(size + j):(j % size);
+		
+		return cells[i][j];
 	}
 
 	public void changeState(Cell cell){

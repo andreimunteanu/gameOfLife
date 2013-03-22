@@ -2,15 +2,20 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Hashtable;
 import java.util.Vector;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JSlider;
 import javax.swing.JTextArea;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 
 public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane attivo fin tanto che no lo ripremi o prendi una figura dell'elenco
@@ -21,9 +26,11 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 	private boolean finish = true;
 	private int nButtons = 5;
 	private Integer workingPosition = 0;// serve ancora?? NO :D
-	private int speed = 100; //default
+	private final int baseSpeed = 202; 
+	private int speed = 40; //default
 	private JMenuBar menu;
 	private JTextArea textGen;
+	private JTextArea textSpeed;
 	private startButton Start;
 	private pauseButton Pause;
 	private stepButton Step;
@@ -32,6 +39,7 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 	private killButton Kill;
 	private Oscillators oscillators;
 	private Spaceships spaceships;
+	private SpeedSlider Speed;
 	private int initialSize =  60 * Cell.CELL_SIZE;
 
 	public static void main(String[] args) {
@@ -54,11 +62,15 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		Kill = new killButton();
 		oscillators = new Oscillators();
 		spaceships = new Spaceships();
+		textSpeed = new JTextArea();
+		Speed = new SpeedSlider();
+
+		textSpeed.setText("____________________\n    Select Speed");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		getContentPane().setLayout(null);
 		setSize(initialSize, initialSize + (8 * Cell.CELL_SIZE));
 		setResizable(true);
-		
+
 		setLocation(10,10);
 		getContentPane().add(grid);
 		getContentPane().add(Start);
@@ -69,6 +81,8 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		getContentPane().add(Kill);
 		getContentPane().add(oscillators);
 		getContentPane().add(spaceships);
+		getContentPane().add(textSpeed);
+		getContentPane().add(Speed);
 		initMenu();
 		resizeGame(40);
 		setVisible(true);
@@ -82,6 +96,8 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		getContentPane().remove(Reset);
 		getContentPane().remove(Clear);
 		getContentPane().remove(Kill);
+		getContentPane().remove(textSpeed);
+		getContentPane().remove(Speed);
 		getContentPane().repaint();
 	}
 
@@ -109,6 +125,8 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		Kill.setBounds(newSize,60,115,30);
 		oscillators.setBounds(newSize,0,115,30);
 		spaceships.setBounds(newSize,30,115,30);
+		textSpeed.setBounds(newSize,90,115,30);
+		Speed.setBounds(newSize,120,115,100);
 	}
 
 	private void initMenu() {
@@ -188,7 +206,9 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 			}
 		}
 	}
-	
+
+
+
 	private class Oscillators extends JButton{
 		protected Oscillators(){
 			super("Oscillators");
@@ -218,16 +238,16 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 				public void actionPerformed(ActionEvent e){
 					running = false;
 					while(!finish);
-						
+
 					oscillators1.show(Oscillators.this,115,0);
 				}
 			});
 		}
 	}
-	
+
 	private class Spaceships extends JButton{
 		protected Spaceships(){
-			super("Spaceshpis");
+			super("Spaceships");
 			setBounds(grid.getXSize(),30,115,20);
 			setBackground(Color.WHITE);
 			final JPopupMenu spaceships1 = new JPopupMenu();
@@ -247,7 +267,7 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 					System.out.println("Ciao");
 				}
 			});
-					
+
 			spaceships1.add(glider);
 			spaceships1.add(lwss);
 			this.addActionListener(new ActionListener(){
@@ -255,15 +275,36 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 				public void actionPerformed(ActionEvent e){
 					running = false;
 					while(!finish);
-					
+
 					spaceships1.show(Spaceships.this,115,0);
 				}
 			});
-			
 		}
-		
 	}
-	
+
+	private class SpeedSlider extends JSlider{
+		private SpeedSlider(){
+			addChangeListener(new ChangeListener(){
+				@Override
+				public void stateChanged(ChangeEvent e) {
+					JSlider source = (JSlider)e.getSource();
+					if (!source.getValueIsAdjusting()) {
+						int modifier = (int)source.getValue();
+						speed = (-2 * modifier) + baseSpeed + (1000 / (modifier + 1)) - 8; // :D
+					}
+				}});
+			Hashtable labelTable = new Hashtable();
+			labelTable.put( new Integer( 1 ), new JLabel("1") );
+			labelTable.put( new Integer( 50 ), new JLabel("50") );
+			labelTable.put( new Integer( 100 ), new JLabel("100") );
+			setLabelTable( labelTable );
+			setMajorTickSpacing(10);
+			setPaintTicks(true);
+			setPaintLabels(true);
+			setOrientation(JSlider.VERTICAL);
+		}
+	}
+
 	private class startButton extends JButton{
 		protected startButton(){
 			super("START");
@@ -271,10 +312,10 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 			this.addActionListener(new ActionListener(){
 				@Override
 				public void actionPerformed(ActionEvent e) {
-				
+
 					if(grid.isAddingFigure())
 						grid.stopAddingFigure();
-					
+
 					if(!running){
 
 						grid.resetGeneration();
@@ -332,10 +373,10 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 				public void actionPerformed(ActionEvent e) {
 					running = false;
 					while(!finish);
-					
+
 					if(grid.isAddingFigure())
 						grid.stopAddingFigure();
-					
+
 					grid.loadSnapShot();
 					grid.forceUpdate();
 				}

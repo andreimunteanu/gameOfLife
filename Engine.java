@@ -2,7 +2,7 @@ import java.util.Vector;
 
 
 public class Engine {
-	private boolean debug = false;  //prova ad abilitare il debug :D
+	private boolean debug = true;  //prova ad abilitare il debug :D
 	private Grid grid;
 	private Vector<Cell> actualGeneration = new Vector<Cell>();
 	private Vector<Cell> nextGeneration = new Vector<Cell>();
@@ -32,7 +32,15 @@ public class Engine {
 		}
 
 	}
+
+	public void setCoreN(int coreN){
+		if(coreN > 0)
+			this.coreN = coreN;
+	}
+
 	private void initThreads(){
+		if(debug)
+			System.out.println("Threads = " + coreN);
 		workingPos = 0;
 		Thread[] slaves = new Slave[coreN];
 		for(int i = 0; i < coreN; i++){

@@ -126,7 +126,7 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		oscillators.setBounds(newSize,0,115,30);
 		spaceships.setBounds(newSize,30,115,30);
 		textSpeed.setBounds(newSize,90,115,30);
-		Speed.setBounds(newSize,120,115,100);
+		Speed.setBounds(newSize,120,115,200);
 	}
 
 	private void initMenu() {

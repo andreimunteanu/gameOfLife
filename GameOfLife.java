@@ -136,8 +136,14 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		menu.setPreferredSize(new Dimension(0,20));
 		JMenu file = new JMenu("File");
 		JMenu size = new JMenu("Size");
+		JMenu threads = new JMenu("Threads");
 		JMenu edit = new JMenu("Edit");
+
 		JMenuItem exit = new JMenuItem("Exit");
+		JMenuItem thread2 = new JMenuItem("2");
+		JMenuItem thread4 = new JMenuItem("4");
+		JMenuItem thread8 = new JMenuItem("8");
+		JMenuItem thread16 = new JMenuItem("16");
 		JMenuItem size1 = new JMenuItem("40 x 40");
 		JMenuItem size2 = new JMenuItem("60 x 60");
 		JMenuItem size3 = new JMenuItem("80 x 80");
@@ -149,6 +155,38 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 				GameOfLife.this.die();
 			} });
 
+		thread2.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				synchronized(grid){
+					engine.setCoreN(2);
+				}
+			}});
+		
+		thread4.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				synchronized(grid){
+					engine.setCoreN(4);
+				}
+			}});
+		
+		thread8.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				synchronized(grid){
+					engine.setCoreN(8);
+				}
+			}});
+		
+		thread16.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				synchronized(grid){
+					engine.setCoreN(16);
+				}
+			}});
+		
 		size1.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -171,9 +209,14 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		});
 
 		edit.add(size);
+		edit.add(threads);
 		size.add(size1);
 		size.add(size2);
 		size.add(size3);
+		threads.add(thread2);
+		threads.add(thread4);
+		threads.add(thread8);
+		threads.add(thread16);
 		file.addSeparator();
 		file.add(exit);
 		menu.add(file);

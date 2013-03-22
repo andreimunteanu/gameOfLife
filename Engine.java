@@ -65,7 +65,7 @@ public class Engine {
 			int y = 0;
 			int count;
 			while(y < grid.getGridSize()){
-				//	System.out.println(x +"  "+ y);
+				//System.out.println(x +"  "+ y);
 				Cell cell = grid.getCell(x, y);
 				if(!cell.isDefDead()){
 					count = watchNeighbors(cell);
@@ -82,16 +82,16 @@ public class Engine {
 
 			int count = 0;
 			int gridSize = grid.getGridSize();
-			int xStart = (cell.auxGetX() - 1) % gridSize;
+			int xStart = (cell.auxGetX() - 1);
 			int xStop = xStart + 3;
-			int yStart = (cell.auxGetY() - 1) % gridSize;
+			int yStart = (cell.auxGetY() - 1);
 			int yStop = yStart + 3;
 			for(int i = xStart;i < xStop;i++)
-				for(int j = yStart;j < yStop;j++)
+				for(int j = yStart;j < yStop;j++){
 					if((i != cell.auxGetX() || j != cell.auxGetY()) 
 							&& grid.getCell(i,j).isAliveNow())
 						count++;
-
+				}
 			return count;
 		}
 	}

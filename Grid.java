@@ -113,7 +113,6 @@ public class Grid extends JPanel{
 		generation++;
 
 		if(generation == 1){
-			System.out.println("Sono1");
 			for(Cell[] c : cells){
 				for(Cell cell : c)
 					if(((GridCell)cell).isAliveNow())
@@ -146,7 +145,7 @@ public class Grid extends JPanel{
 					else if(killing){
 						GridCell.this.definitelyDead = true;
 						GridCell.this.actualGeneration = DEAD;
-						GridCell.this.setBackground(Color.BLACK);
+						GridCell.this.setBackground(Color.RED);
 					}
 					else{
 						if(GridCell.this.definitelyDead)

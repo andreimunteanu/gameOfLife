@@ -75,7 +75,7 @@ public class Grid extends JPanel{
 
 	private void switchCell(Cell cell){
 		synchronized(this){
-			((GridCell)cell).changeNow();
+			cell.changeNow();
 			forceUpdate();
 		}
 	}
@@ -116,14 +116,14 @@ public class Grid extends JPanel{
 		if(generation == 1){
 			for(Cell[] c : cells){
 				for(Cell cell : c)
-					if(((GridCell)cell).isAliveNow())
+					if(cell.isAliveNow())
 						snapShot.add(cell);
 			}
 		}
 
 		synchronized(this){
 			for(Cell cell : changedCells)
-				((GridCell)cell).swap();
+				cell.swap();
 		}
 
 		changedCells = new Vector<Cell>();
@@ -230,7 +230,7 @@ public class Grid extends JPanel{
 	}
 
 	public void setKilling(){
-		killing = (killing)? false : true;
+		killing = !killing;
 	}
 
 	public void clearGrid(){ 
@@ -265,6 +265,6 @@ public class Grid extends JPanel{
 	}
 	
 	public void toggleDebug(){
-		debug = (debug)?false:true;
+		debug = !debug;
 		}
 }

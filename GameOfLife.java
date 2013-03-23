@@ -14,6 +14,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSlider;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -25,10 +26,11 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 	private boolean finish = true;
 	private int nButtons = 5;
 	private final int baseSpeed = 202; 
-	private int speed = 40; //default
+	private int speed = 80; //default
 	private JMenuBar menu;
 	private JTextArea textGen;
 	private JTextArea textSpeed;
+	private JTextField threadText;
 	private startButton start;
 	private pauseButton pause;
 	private stepButton step;
@@ -134,6 +136,14 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		speedSelect.setBounds(newSize,120,115,200);
 	}
 
+	private class textActionListener implements ActionListener{
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			String text = threadText.getText();
+			engine.setCoreN(Integer.parseInt(text));
+			}
+	}
+
 	private void initMenu() {
 		menu = new JMenuBar();
 		menu.setOpaque(true);
@@ -150,17 +160,15 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		JMenuItem thread4 = new JMenuItem("4");
 		JMenuItem thread8 = new JMenuItem("8");
 		JMenuItem thread16 = new JMenuItem("16");
-		JMenuItem threadMan = new JMenuItem("Manual");
+		JMenu threadMan = new JMenu("Manual");
+		threadText = new JTextField(3);
 		JMenuItem size1 = new JMenuItem("40 x 40");
 		JMenuItem size2 = new JMenuItem("60 x 60");
 		JMenuItem size3 = new JMenuItem("80 x 80");
 		textGen = new JTextArea(); // bisogna trovare un modo per allinearla a destra
 		textGen.setEditable(false);
-		exit.addActionListener(new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				GameOfLife.this.die();
-			} });
+
+		threadText.addActionListener(new textActionListener());
 
 		debug.addActionListener(new ActionListener(){
 			@Override
@@ -233,6 +241,7 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		threads.add(thread16);
 		threads.addSeparator();
 		threads.add(threadMan);
+		threadMan.add(threadText);
 		file.addSeparator();
 		file.add(exit);
 		menu.add(file);

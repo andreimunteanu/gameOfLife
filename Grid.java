@@ -19,6 +19,7 @@ public class Grid extends JPanel{
 	private final static boolean DEAD = false;
 	private static boolean killing = false;
 	private static boolean addingFigure = false;
+	private boolean debug = false;
 	private static String figureName ="";
 	private int xSize;
 	private int ySize;
@@ -152,7 +153,8 @@ public class Grid extends JPanel{
 							GridCell.this.definitelyDead = false;
 						Grid.this.switchCell(GridCell.this);
 					}
-					System.out.println("("+ isAliveNow()+") CLICK ON => " + "(" + GridCell.this.auxGetX() + ", " + GridCell.this.auxGetY() + ")");
+					if(debug)
+						System.out.println("(AliveNow = "+ isAliveNow()+") CLICK ON => " + GridCell.this);
 				}
 			});
 		}		
@@ -261,4 +263,8 @@ public class Grid extends JPanel{
 	public int getGeneration() {
 		return generation;
 	}
+	
+	public void toggleDebug(){
+		debug = (debug)?false:true;
+		}
 }

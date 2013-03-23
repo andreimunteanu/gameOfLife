@@ -145,10 +145,12 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		JMenu edit = new JMenu("Edit");
 
 		JMenuItem exit = new JMenuItem("Exit");
+		JMenuItem debug = new JMenuItem("Debug");
 		JMenuItem thread2 = new JMenuItem("2");
 		JMenuItem thread4 = new JMenuItem("4");
 		JMenuItem thread8 = new JMenuItem("8");
 		JMenuItem thread16 = new JMenuItem("16");
+		JMenuItem threadMan = new JMenuItem("Manual");
 		JMenuItem size1 = new JMenuItem("40 x 40");
 		JMenuItem size2 = new JMenuItem("60 x 60");
 		JMenuItem size3 = new JMenuItem("80 x 80");
@@ -159,6 +161,12 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 			public void actionPerformed(ActionEvent e) {
 				GameOfLife.this.die();
 			} });
+
+		debug.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				engine.toggleDebug();				
+			}});
 
 		thread2.addActionListener(new ActionListener(){
 			@Override
@@ -215,6 +223,7 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 
 		edit.add(size);
 		edit.add(threads);
+		edit.add(debug);
 		size.add(size1);
 		size.add(size2);
 		size.add(size3);
@@ -222,6 +231,8 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		threads.add(thread4);
 		threads.add(thread8);
 		threads.add(thread16);
+		threads.addSeparator();
+		threads.add(threadMan);
 		file.addSeparator();
 		file.add(exit);
 		menu.add(file);

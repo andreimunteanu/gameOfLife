@@ -5,8 +5,9 @@ public class Engine {
 	private boolean debug = false;
 	private Grid grid;
 	private Integer workingPos = 0;
-	private Integer runningSlaves = 4;  
-	private int coreN = 4;//Runtime.getRuntime().availableProcessors();
+	private int coreN =Runtime.getRuntime().availableProcessors();
+	private Integer runningSlaves = coreN;
+	private boolean changedCoreN = false;
 	private long time;
 	private Thread[] slaves;
 
@@ -17,6 +18,8 @@ public class Engine {
 
 	public void computeNextGen() {
 		synchronized(grid){
+			if(changedCoreN)
+				initThreads();
 			if(debug){
 				System.out.println("================= COMPUTING NEXT GENERATION ================");
 				time = System.currentTimeMillis();
@@ -32,8 +35,10 @@ public class Engine {
 	public void setCoreN(int coreN){
 		if(debug)
 			System.out.println("THREADS = " + coreN);
-		if(coreN > 0)
+		if(coreN > 0){
 			this.coreN = coreN;
+			changedCoreN = true;
+		}
 	}
 
 	public void toggleDebug(){
@@ -45,16 +50,23 @@ public class Engine {
 	private void initThreads(){
 		if(debug)
 			System.out.println("Threads = " + coreN);
-
+		runningSlaves = coreN;
+		Synchronizer sync = new Synchronizer();
+		sync.start();
 		workingPos = grid.getGridSize();
 		slaves = new Slave[coreN];
 		for(int i = 0; i < coreN; i++){
 			slaves[i] = new Slave();
 			slaves[i].start();
 		}
+		try {
+			sync.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 	private void runSlaves(){
-		runningSlaves = 4;
+		runningSlaves = coreN;
 		Synchronizer sync = new Synchronizer();
 		sync.start();
 		try {
@@ -62,6 +74,7 @@ public class Engine {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		changedCoreN = false;
 	}
 	private class Synchronizer extends Thread{
 		public void run(){
@@ -127,7 +140,7 @@ public class Engine {
 
 		private int watchNeighbors(Cell cell){
 			int count = 0;
-			int gridSize = grid.getGridSize();
+	//		int gridSize = grid.getGridSize();
 			int xStart = (cell.auxGetX() - 1);
 			int xStop = xStart + 3;
 			int yStart = (cell.auxGetY() - 1);

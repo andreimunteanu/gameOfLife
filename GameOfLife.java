@@ -141,7 +141,7 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		public void actionPerformed(ActionEvent e) {
 			String text = threadText.getText();
 			engine.setCoreN(Integer.parseInt(text));
-			}
+		}
 	}
 
 	private void initMenu() {
@@ -170,6 +170,12 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 
 		threadText.addActionListener(new textActionListener());
 
+		exit.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				GameOfLife.this.die();
+			} });
+		
 		debug.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent arg0) {

@@ -155,6 +155,19 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		}	
 	}
 
+	private class threadActionListener implements ActionListener{
+		private int coreN;
+		public threadActionListener(int coreN){
+			this.coreN = coreN;
+		}
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			synchronized(grid){
+				engine.setCoreN(coreN);
+			}
+		}
+	}
+	
 	private void initMenu() {
 		menu = new JMenuBar();
 		menu.setOpaque(true);
@@ -194,37 +207,10 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 				engine.toggleDebug();				
 			}});
 
-		thread2.addActionListener(new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				synchronized(grid){
-					engine.setCoreN(2);
-				}
-			}});
-
-		thread4.addActionListener(new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				synchronized(grid){
-					engine.setCoreN(4);
-				}
-			}});
-
-		thread8.addActionListener(new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				synchronized(grid){
-					engine.setCoreN(8);
-				}
-			}});
-
-		thread16.addActionListener(new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				synchronized(grid){
-					engine.setCoreN(16);
-				}
-			}});
+		thread2.addActionListener(new threadActionListener(2));
+		thread4.addActionListener(new threadActionListener(4));
+		thread8.addActionListener(new threadActionListener(8));
+		thread16.addActionListener(new threadActionListener(16));
 
 		size1.addActionListener(new sizeActionListener(40));
 		size2.addActionListener(new sizeActionListener(50));

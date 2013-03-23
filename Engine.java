@@ -2,13 +2,13 @@ import java.util.Vector;
 
 
 public class Engine {
-	private boolean debug = true;  //prova ad abilitare il debug :D
+	private boolean debug = true;
 	private Grid grid;
 	private Vector<Cell> actualGeneration = new Vector<Cell>();
 	private Vector<Cell> nextGeneration = new Vector<Cell>();
 	private Vector<Cell> maybeNext = new Vector<Cell>();
 	private Integer workingPos = 0;	
-	private int coreN = 4;
+	private int coreN = Runtime.getRuntime().availableProcessors();
 	private long time;
 
 	public Engine(Grid grid){
@@ -37,10 +37,15 @@ public class Engine {
 		if(coreN > 0)
 			this.coreN = coreN;
 	}
+	
+	public void toggleDebug(){
+		debug = (debug)?false:true;
+	}
 
 	private void initThreads(){
 		if(debug)
 			System.out.println("Threads = " + coreN);
+		
 		workingPos = 0;
 		Thread[] slaves = new Slave[coreN];
 		for(int i = 0; i < coreN; i++){

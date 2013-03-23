@@ -24,9 +24,6 @@ public class Engine {
 
 			initThreads();
 			grid.nextGeneration();
-			//		actualGeneration = grid.getActualGeneration();
-			//			actualGeneration = nextGeneration;
-			//grid.setActualGeneration(actualGeneration);
 			if(debug)
 				System.out.println("================= FINISHED COMPUTING NEXT GEN ================ \nTIME ELAPSED = " + (System.currentTimeMillis() - time));
 		}
@@ -34,11 +31,15 @@ public class Engine {
 	}
 
 	public void setCoreN(int coreN){
+		if(debug)
+			System.out.println("THREADS = " + coreN);
+		
 		if(coreN > 0)
 			this.coreN = coreN;
 	}
-	
+
 	public void toggleDebug(){
+		grid.toggleDebug();
 		debug = (debug)?false:true;
 		System.out.println("DEBUG " + ((debug)?"ENABLED":"DISABLED"));
 	}
@@ -46,7 +47,7 @@ public class Engine {
 	private void initThreads(){
 		if(debug)
 			System.out.println("Threads = " + coreN);
-		
+
 		workingPos = 0;
 		Thread[] slaves = new Slave[coreN];
 		for(int i = 0; i < coreN; i++){
@@ -85,7 +86,8 @@ public class Engine {
 					count = watchNeighbors(cell);
 					if((cell.isAliveNow() && !(count == 3 || count == 2)) || (!cell.isAliveNow() && count == 3)) {
 						grid.changeState(cell);
-						//System.out.println("Cell " + cell +" is ALIVE => " + cell.isAliveNow() + " count = " + count);	
+						if(debug)
+							System.out.println(getName() + "==> cell " + cell +" is ALIVE => " + cell.isAliveNow() + " count = " + count);	
 					}
 				}
 				y++;
@@ -93,7 +95,6 @@ public class Engine {
 		}
 
 		private int watchNeighbors(Cell cell){
-
 			int count = 0;
 			int gridSize = grid.getGridSize();
 			int xStart = (cell.auxGetX() - 1);

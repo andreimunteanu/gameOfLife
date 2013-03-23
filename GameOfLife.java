@@ -143,6 +143,17 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 			engine.setCoreN(Integer.parseInt(text));
 		}
 	}
+	
+	private class sizeActionListener implements ActionListener{
+		private int size;
+		public sizeActionListener(int size){
+			this.size = size;
+		}
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			GameOfLife.this.resizeGame(size);				
+		}	
+	}
 
 	private void initMenu() {
 		menu = new JMenuBar();
@@ -163,8 +174,9 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		JMenu threadMan = new JMenu("Manual");
 		threadText = new JTextField(3);
 		JMenuItem size1 = new JMenuItem("40 x 40");
-		JMenuItem size2 = new JMenuItem("60 x 60");
-		JMenuItem size3 = new JMenuItem("80 x 80");
+		JMenuItem size2 = new JMenuItem("50 x 50");
+		JMenuItem size3 = new JMenuItem("60 x 60");
+		JMenuItem size4 = new JMenuItem("70 x 70");
 		textGen = new JTextArea(); // bisogna trovare un modo per allinearla a destra
 		textGen.setEditable(false);
 
@@ -214,26 +226,10 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 				}
 			}});
 
-		size1.addActionListener(new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				GameOfLife.this.resizeGame(40);				
-			}			
-		});
-
-		size2.addActionListener(new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				GameOfLife.this.resizeGame(60);				
-			}			
-		});
-
-		size3.addActionListener(new ActionListener(){
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				GameOfLife.this.resizeGame(80);				
-			}			
-		});
+		size1.addActionListener(new sizeActionListener(40));
+		size2.addActionListener(new sizeActionListener(50));
+		size3.addActionListener(new sizeActionListener(60));
+		size4.addActionListener(new sizeActionListener(70));
 
 		edit.add(size);
 		edit.add(threads);
@@ -241,6 +237,7 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		size.add(size1);
 		size.add(size2);
 		size.add(size3);
+		size.add(size4);
 		threads.add(thread2);
 		threads.add(thread4);
 		threads.add(thread8);

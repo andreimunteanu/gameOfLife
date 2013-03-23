@@ -244,7 +244,7 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 			String spaces = "        ";
 			for(int i = 0;i < (grid.getXSize() / Cell.CELL_SIZE);i++)
 				spaces += " ";
-			textGen.setText(spaces + "Gen " + grid.getGeneration());
+			textGen.setText(spaces + "| Gen " + grid.getGeneration() + " |");
 			try {
 				Thread.sleep(speed);
 			} catch (InterruptedException e) {

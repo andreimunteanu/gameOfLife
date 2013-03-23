@@ -4,15 +4,15 @@ import java.util.Vector;
 public class Engine {
 	private boolean debug = false;
 	private Grid grid;
-	private Vector<Cell> actualGeneration = new Vector<Cell>();
-	private Vector<Cell> nextGeneration = new Vector<Cell>();
-	private Vector<Cell> maybeNext = new Vector<Cell>();
-	private Integer workingPos = 0;	
-	private int coreN = Runtime.getRuntime().availableProcessors();
+	private Integer workingPos = 0;
+	private Integer runningSlaves = 4;  
+	private int coreN = 4;//Runtime.getRuntime().availableProcessors();
 	private long time;
+	private Thread[] slaves;
 
 	public Engine(Grid grid){
 		this.grid = grid;
+		initThreads();
 	}
 
 	public void computeNextGen() {
@@ -21,8 +21,7 @@ public class Engine {
 				System.out.println("================= COMPUTING NEXT GENERATION ================");
 				time = System.currentTimeMillis();
 			}
-
-			initThreads();
+			runSlaves();
 			grid.nextGeneration();
 			if(debug)
 				System.out.println("================= FINISHED COMPUTING NEXT GEN ================ \nTIME ELAPSED = " + (System.currentTimeMillis() - time));
@@ -33,14 +32,13 @@ public class Engine {
 	public void setCoreN(int coreN){
 		if(debug)
 			System.out.println("THREADS = " + coreN);
-		
 		if(coreN > 0)
 			this.coreN = coreN;
 	}
 
 	public void toggleDebug(){
 		grid.toggleDebug();
-		debug = (debug)?false:true;
+		debug = !debug;
 		System.out.println("DEBUG " + ((debug)?"ENABLED":"DISABLED"));
 	}
 
@@ -48,32 +46,65 @@ public class Engine {
 		if(debug)
 			System.out.println("Threads = " + coreN);
 
-		workingPos = 0;
-		Thread[] slaves = new Slave[coreN];
+		workingPos = grid.getGridSize();
+		slaves = new Slave[coreN];
 		for(int i = 0; i < coreN; i++){
 			slaves[i] = new Slave();
 			slaves[i].start();
 		}
-		for(int i = 0; i < coreN; i++){
-			try {
-				slaves[i].join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+	}
+	private void runSlaves(){
+		runningSlaves = 4;
+		Synchronizer sync = new Synchronizer();
+		sync.start();
+		try {
+			sync.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	private class Synchronizer extends Thread{
+		public void run(){
+			workingPos = 0;
+			synchronized(Engine.this){
+				Engine.this.notifyAll();
 			}
+			while(true){
+				if(runningSlaves <= 0){
+					return;
+				}
+				else
+					try {
+						sleep(20);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+			}
+
 		}
 	}
 
 	private class Slave extends Thread{
-
+		private boolean canWork = false;
 		public void run(){
-			int x;
+			int x = 0;
 			while(true){
 				synchronized(Engine.this){
-					if(workingPos < grid.getGridSize())
+					if(workingPos < grid.getGridSize()){
 						x = workingPos++;
-					else return;
+						canWork = true;
+					}
+					else
+						try {
+							canWork = false;
+							runningSlaves--;
+							Engine.this.wait();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
 				}
-				compute(x);
+				if(canWork)
+					compute(x);
 			}
 		}
 		private void compute(int x){

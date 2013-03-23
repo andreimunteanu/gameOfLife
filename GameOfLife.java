@@ -5,6 +5,7 @@ import java.awt.event.ActionListener;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -91,7 +92,7 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		setVisible(true);
 	}
 
-	private void removeFrame(){
+/*	private void removeFrame(){
 		getContentPane().remove(grid);
 		getContentPane().remove(start);
 		getContentPane().remove(pause);
@@ -102,7 +103,7 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		getContentPane().remove(textSpeed);
 		getContentPane().remove(speedSelect);
 		getContentPane().repaint();
-	}
+	}*/
 
 	private void die(){
 		System.exit(0);
@@ -132,8 +133,8 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		Kill.setBounds(newSize,60,115,30);
 		oscillators.setBounds(newSize,0,115,30);
 		spaceships.setBounds(newSize,30,115,30);
-		textSpeed.setBounds(newSize,90,115,30);
-		speedSelect.setBounds(newSize,120,115,200);
+		textSpeed.setBounds(newSize,91,115,30);
+		speedSelect.setBounds(newSize,130,115,200);
 	}
 
 	private class textActionListener implements ActionListener{
@@ -211,7 +212,7 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		thread4.addActionListener(new threadActionListener(4));
 		thread8.addActionListener(new threadActionListener(8));
 		thread16.addActionListener(new threadActionListener(16));
-
+		
 		size1.addActionListener(new sizeActionListener(40));
 		size2.addActionListener(new sizeActionListener(50));
 		size3.addActionListener(new sizeActionListener(60));
@@ -263,6 +264,20 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		}
 	}
 
+	private class figuresActionListener implements ActionListener{
+		private String figureName;
+		final JPopupMenu waitingWindow;
+		public figuresActionListener( String figureName){
+			this.figureName = figureName;
+			waitingWindow = new JPopupMenu();
+			waitingWindow.add(new JMenuItem("Waiting for\n  position"));
+		}
+		@Override
+		public void actionPerformed(ActionEvent e) {
+				grid.setFigure(figureName);
+				waitingWindow.show(GameOfLife.this, grid.getXSize(), 0);
+		}
+	}
 
 
 	private class Oscillators extends JButton{
@@ -270,23 +285,13 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 			super("Oscillators");
 			setBounds(grid.getXSize(),0,115,20);
 			setBackground(Color.WHITE);
-			final JPopupMenu oscillators1 = new JPopupMenu();
+			final JPopupMenu oscillatorsMenu = new JPopupMenu();
 			final JMenuItem blinker = new JMenuItem("Blinker");
 			final JMenuItem pulsar = new JMenuItem("Pulsar");
-			blinker.addActionListener(new ActionListener(){
-				@Override
-				public void actionPerformed(ActionEvent e){
-					grid.setFigure("blinker");
-				}
-			});
-			pulsar.addActionListener(new ActionListener(){
-				@Override
-				public void actionPerformed(ActionEvent e){
-					grid.setFigure("pulsar");
-				}
-			});
-			oscillators1.add(blinker);
-			oscillators1.add(pulsar);
+			blinker.addActionListener(new figuresActionListener("blinker"));
+			pulsar.addActionListener(new figuresActionListener("pulsar"));
+			oscillatorsMenu.add(blinker);
+			oscillatorsMenu.add(pulsar);
 			this.addActionListener(new ActionListener(){
 				@Override
 				public void actionPerformed(ActionEvent e){
@@ -294,7 +299,7 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 					while(!finish);
 					start.setEnabled(true);
 					pause.setEnabled(false);
-					oscillators1.show(Oscillators.this,115,0);
+					oscillatorsMenu.show(Oscillators.this,115,0);
 				}
 			});
 		}
@@ -305,24 +310,13 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 			super("Spaceships");
 			setBounds(grid.getXSize(),30,115,20);
 			setBackground(Color.WHITE);
-			final JPopupMenu spaceships1 = new JPopupMenu();
+			final JPopupMenu spaceshipsMenu = new JPopupMenu();
 			final JMenuItem glider = new JMenuItem("Glider");
 			final JMenuItem lwss = new JMenuItem("LWSS");			
-			glider.addActionListener(new ActionListener(){
-				@Override
-				public void actionPerformed(ActionEvent e){
-					grid.setFigure("glider");
-				}
-			});
-			lwss.addActionListener(new ActionListener(){
-				@Override
-				public void actionPerformed(ActionEvent e){
-					grid.setFigure("lwss");
-				}
-			});
-
-			spaceships1.add(glider);
-			spaceships1.add(lwss);
+			glider.addActionListener(new figuresActionListener("glider"));
+			lwss.addActionListener(new figuresActionListener("lwss"));
+			spaceshipsMenu.add(glider);
+			spaceshipsMenu.add(lwss);
 			this.addActionListener(new ActionListener(){
 				@Override
 				public void actionPerformed(ActionEvent e){
@@ -330,12 +324,13 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 					while(!finish);
 					start.setEnabled(true);
 					pause.setEnabled(false);
-					spaceships1.show(Spaceships.this,115,0);
+					spaceshipsMenu.show(Spaceships.this,115,0);
 				}
 			});
 		}
 	}
 
+	@SuppressWarnings("serial")
 	private class SpeedSlider extends JSlider{
 		private SpeedSlider(){
 			addChangeListener(new ChangeListener(){
@@ -344,7 +339,7 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 					JSlider source = (JSlider)e.getSource();
 					if (!source.getValueIsAdjusting()) {
 						int modifier = (int)source.getValue();
-						speed = (-2 * modifier) + baseSpeed + (1000 / (modifier + 1)) - 8; // :D
+						speed = (-2 * modifier) + baseSpeed + (1000 / (modifier + 1)) - 8; // D:
 					}
 				}});
 			Hashtable labelTable = new Hashtable();
@@ -437,6 +432,7 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 					grid.loadSnapShot();
 					grid.forceUpdate();
 					reset.setEnabled(false);
+					start.setEnabled(true);
 				}
 			});
 		}

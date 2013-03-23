@@ -2,7 +2,7 @@ import java.util.Vector;
 
 
 public class Engine {
-	private boolean debug = true;
+	private boolean debug = false;
 	private Grid grid;
 	private Vector<Cell> actualGeneration = new Vector<Cell>();
 	private Vector<Cell> nextGeneration = new Vector<Cell>();
@@ -40,6 +40,7 @@ public class Engine {
 	
 	public void toggleDebug(){
 		debug = (debug)?false:true;
+		System.out.println("DEBUG " + ((debug)?"ENABLED":"DISABLED"));
 	}
 
 	private void initThreads(){

@@ -1,7 +1,15 @@
 import java.util.Vector;
 
-
+/**
+ * 
+ * @author 
+ *
+ */
 public class Engine {
+	
+	/**
+	 * 
+	 */
 	private boolean debug = false;
 	private Grid grid;
 	private Integer workingPos = 0;
@@ -10,12 +18,19 @@ public class Engine {
 	private boolean changedCoreN = false;
 	private long time;
 	private Thread[] slaves;
-
+	
+	/**
+	 * 
+	 * @param grid
+	 */
 	public Engine(Grid grid){
 		this.grid = grid;
 		initThreads();
 	}
-
+	
+	/**
+	 * 
+	 */
 	public void computeNextGen() {
 		synchronized(grid){
 			if(changedCoreN)
@@ -31,7 +46,11 @@ public class Engine {
 		}
 
 	}
-
+	
+	/**
+	 * 
+	 * @param coreN
+	 */
 	public void setCoreN(int coreN){
 		if(debug)
 			System.out.println("THREADS = " + coreN);
@@ -40,13 +59,19 @@ public class Engine {
 			changedCoreN = true;
 		}
 	}
-
+	
+	/**
+	 * 
+	 */
 	public void toggleDebug(){
 		grid.toggleDebug();
 		debug = !debug;
 		System.out.println("DEBUG " + ((debug)?"ENABLED":"DISABLED"));
 	}
-
+	
+	/*
+	 * 
+	 */
 	private void initThreads(){
 		if(debug)
 			System.out.println("Threads = " + coreN);
@@ -65,6 +90,10 @@ public class Engine {
 			e.printStackTrace();
 		}
 	}
+	
+	/*
+	 * 
+	 */
 	private void runSlaves(){
 		runningSlaves = coreN;
 		Synchronizer sync = new Synchronizer();
@@ -76,7 +105,17 @@ public class Engine {
 		}
 		changedCoreN = false;
 	}
+	
+	/*
+	 * 
+	 * 
+	 *
+	 */
 	private class Synchronizer extends Thread{
+		
+		/*
+		 * 
+		 */
 		public void run(){
 			workingPos = 0;
 			synchronized(Engine.this){
@@ -96,9 +135,18 @@ public class Engine {
 
 		}
 	}
-
+	
+	/*
+	 * 
+	 *
+	 *	
+	 */
 	private class Slave extends Thread{
 		private boolean canWork = false;
+		
+		/*
+		 * 
+		 */
 		public void run(){
 			int x = 0;
 			while(true){
@@ -120,6 +168,11 @@ public class Engine {
 					compute(x);
 			}
 		}
+		
+		/*
+		 * 
+		 * @param x
+		 */
 		private void compute(int x){
 			int y = 0;
 			int count;
@@ -137,7 +190,13 @@ public class Engine {
 				y++;
 			}
 		}
-
+		
+		/*
+		 *
+		 * 
+		 * @param cell
+		 * @return
+		 */
 		private int watchNeighbors(Cell cell){
 			int count = 0;
 	//		int gridSize = grid.getGridSize();

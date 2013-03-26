@@ -1,4 +1,3 @@
-import java.util.Vector;
 
 /**
  * 
@@ -39,6 +38,7 @@ public class Engine {
 				System.out.println("================= COMPUTING NEXT GENERATION ================");
 				time = System.currentTimeMillis();
 			}
+			
 			runSlaves();
 			grid.nextGeneration();
 			if(debug)

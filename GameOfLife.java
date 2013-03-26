@@ -78,9 +78,11 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		Kill = new killButton();
 		oscillators = new Oscillators();
 		spaceships = new Spaceships();
+		textGen = new JTextArea(); // bisogna trovare un modo per allinearla a destra
 		textSpeed = new JTextArea();
 		speedSelect = new SpeedSlider();
-
+		
+		textGen.setEditable(false);
 		pause.setEnabled(false);
 		reset.setEnabled(false);
 
@@ -100,6 +102,7 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		getContentPane().add(Kill);
 		getContentPane().add(oscillators);
 		getContentPane().add(spaceships);
+		getContentPane().add(textGen);
 		getContentPane().add(textSpeed);
 		getContentPane().add(speedSelect);
 		initMenu();
@@ -107,19 +110,6 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		setVisible(true);
 	}
 
-/*	private void removeFrame(){
-		getContentPane().remove(grid);
-		getContentPane().remove(start);
-		getContentPane().remove(pause);
-		getContentPane().remove(step);
-		getContentPane().remove(reset);
-		getContentPane().remove(clear);
-		getContentPane().remove(Kill);
-		getContentPane().remove(textSpeed);
-		getContentPane().remove(speedSelect);
-		getContentPane().repaint();
-	}*/
-	
 	/*
 	 * 
 	 */
@@ -159,11 +149,12 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		step.setBounds(2 * (newSize  / nButtons), newSize , newSize  / nButtons, 3 * Cell.CELL_SIZE	);
 		reset.setBounds(3 * (newSize  / nButtons), newSize , newSize  / nButtons, 3 * Cell.CELL_SIZE	);
 		clear.setBounds(4 * (newSize  / nButtons), newSize , newSize  / nButtons, 3 * Cell.CELL_SIZE	);
-		Kill.setBounds(newSize,60,115,30);
 		oscillators.setBounds(newSize,0,115,30);
 		spaceships.setBounds(newSize,30,115,30);
-		textSpeed.setBounds(newSize,91,115,30);
-		speedSelect.setBounds(newSize,130,115,200);
+		Kill.setBounds(newSize,60,115,30);
+		textGen.setBounds(newSize,90, 115, 20);
+		textSpeed.setBounds(newSize,111,115,30);
+		speedSelect.setBounds(newSize,141,115,200);
 	}
 	
 	/*
@@ -238,9 +229,6 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		JMenuItem size2 = new JMenuItem("50 x 50");
 		JMenuItem size3 = new JMenuItem("60 x 60");
 		JMenuItem size4 = new JMenuItem("70 x 70");
-		textGen = new JTextArea(); // bisogna trovare un modo per allinearla a destra
-		textGen.setEditable(false);
-
 		threadText.addActionListener(new textActionListener());
 
 		exit.addActionListener(new ActionListener(){
@@ -283,7 +271,6 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		file.add(exit);
 		menu.add(file);
 		menu.add(edit);
-		menu.add(textGen);
 		setJMenuBar(menu);
 	}
 	
@@ -292,10 +279,9 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 	 */
 	private void setOff(){
 		while(true){
-			String spaces = "        ";
-			for(int i = 0;i < (grid.getXSize() / Cell.CELL_SIZE);i++)
-				spaces += " ";
-			textGen.setText(spaces + "| Gen " + grid.getGeneration() + " |");
+			
+			textGen.setText("       | Gen " + grid.getGeneration() + " |");
+			
 			try {
 				Thread.sleep(speed);
 			} catch (InterruptedException e) {

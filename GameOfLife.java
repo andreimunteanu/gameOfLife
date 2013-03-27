@@ -19,23 +19,68 @@ import javax.swing.event.ChangeListener;
 
 /**
  * 
- * @author 
- *
+ * @author <A HREF="mailto:niccolo.marastoni@studenti.univr.it">Niccolò Marastoni</A>
+ * @author <A HREF="mailto:andrei.munteanu@studenti.univr.it">Andrei Munteanu</A>
+ * @version %I%, %G%
+ * 
  */
-public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane attivo fin tanto che no lo ripremi o prendi una figura dell'elenco
-	/*
-	 * 
+
+public class GameOfLife extends JFrame {
+	
+	/**
+	 * The grid where all the cells will roam
 	 */
-	private Grid grid;					//premi su una figura e puoi posizionarla finchè non hai premuto su un altro bottone
-	private Engine engine;				//una cella rimane morta per sempre finchè non fai clear ci ripremi in modalità non killing o ci metti sopra un figura
-	private boolean running = false;	// p.s. puoi posizionare solo il blinker
+	private Grid grid;
+	
+	/**
+	 * The game engine
+	 */
+	private Engine engine;			
+	
+	/**
+	 * Toggles the "running" state of the game, used mainly by the "Start" and "Pause" buttons
+	 */
+	private boolean running = false;	
+	
+	/**
+	 * Set by the game main loop, used to not interfere with the engine while it's working
+	 */
 	private boolean finish = true;
+	
+	/**
+	 * Number of buttons in the lower area, used to customize the size while keeping proportions
+	 */
 	private int nButtons = 5;
-	private final int baseSpeed = 202; 
-	private int speed = 80; //default
+	
+	/**
+	 * variable used to customize the speed via the speed selector slider
+	 */
+	private final int baseSpeed = 202;
+	
+	/**
+	 * initial speed of the game, measured in milliseconds between each generation
+	 * (smaller number equals faster speed)
+	 */
+	private int speed = 80;
+	
+	/**
+	 * menu bar
+	 */
 	private JMenuBar menu;
+	
+	/**
+	 * shows the number of the actual generation, constantly refreshed
+	 */
 	private JTextArea textGen;
+	
+	/**
+	 * static text area 
+	 */
 	private JTextArea textSpeed;
+	
+	/**
+	 * used to get the user's input on a custom number of threads to be used
+	 */
 	private JTextField threadText;
 	private startButton start;
 	private pauseButton pause;

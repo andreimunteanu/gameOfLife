@@ -13,61 +13,69 @@ import javax.swing.JPanel;
 
 public class Grid extends JPanel{
 	
-	/*
-	 *Array which contains size x size cells. 
+	/**
+	 * Array that contains size x size cells. 
 	 */
 	private Cell[][] cells;
 	
-	/*
+	/**
 	 * The possible states of the cells.
 	 */
 	private final static boolean ALIVE = true;
 	private final static boolean DEAD = false;
 	
-	/*
-	 * Toggles the "killing" mode.
+	/**
+	 * Toggles the "killing" mode, where cells are set as definitely dead, as per assignment.
 	 */
 	private static boolean killing = false;
 	
-	/*
+	/**
 	 * Toggles the "adding figure" mode.
-	 * If true the game waits for a position for the figure.
+	 * If true the game waits for the user to position the figure.
 	 */
 	private static boolean addingFigure = false;
 	
-	/*
+	/**
 	 * Toggles the "debug" mode.
-	 * If true prints information for debug.
+	 * If true prints debugging information to the standard output.
 	 */
 	private boolean debug = false;
 	
-	/*
+	/**
 	 * The name of the figure that can be printed on the grid.
 	 * A figure is a specific number of alive cells which have specified position.
 	 */
 	private static String figureName ="";
 	
-	/*
+	/**
 	 * The sizes of the grid.
 	 */
 	private int xSize;
 	private int ySize;
 	
-	/*
-	 *Array's dimension.
+	/**
+	 * Dimensions of the array.
 	 * Number of the game's cells: size*size.
 	 */
 	private int size;
 	
-	/*
-	 * 
+	/**
+	 * list of living cells saved each time the user presses "Start".
 	 */
 	private Vector<Cell> snapShot = new Vector<Cell>();
+	
+	/**
+	 * list of cells whose state has been changed by the game engine.
+	 */
 	private Vector<Cell> changedCells = new Vector<Cell>();
+	
+	/**
+	 * number of the generation since "Start" has been pressed.
+	 */
 	private int generation = 0;
 	
 	/**
-	 * Constructs a frame based on integer variable "size", with a specified number of cell, each one initialized as a dead cell.
+	 * Constructs a frame based on the integer variable "size", with a specified number of cell, each one initialized as a dead cell.
 	 * 
 	 * @param size
 	 * 				size of the frame
@@ -78,7 +86,7 @@ public class Grid extends JPanel{
 		initFrame();
 	}
 	
-	/*
+	/**
 	 * Initializes each cell on the array cells.
 	 */
 	private void initCells(){ 
@@ -88,7 +96,7 @@ public class Grid extends JPanel{
 				cells[i][j] = new GridCell(i,j);
 	}
 	
-	/*
+	/**
 	 * Initializes the size of the grid based on the number of cells and their dimension.
 	 */
 	private void initFrame(){
@@ -100,8 +108,8 @@ public class Grid extends JPanel{
 		setVisible(true);
 	}	
 	
-	/* 
-	 * Adds the cells to the grid
+	/** 
+	 * Adds the cells to the grid.
 	 */
 	private void addCellsToFrame() {
 		for(int i = 0;i < size;i++)
@@ -111,7 +119,7 @@ public class Grid extends JPanel{
 	}
 	
 	/**
-	 * Sets the grid size based on integer variable.
+	 * Sets the grid size based on a new integer variable.
 	 * 
 	 * @param newSize
 	 * 				new size of the grid
@@ -125,7 +133,7 @@ public class Grid extends JPanel{
 	}
 	
 	/**
-	 * Returns an integer which is the xSize of the grid.
+	 * Returns the size of the grid on the x axis.
 	 * 
 	 * @return
 	 * 				xSize
@@ -135,7 +143,7 @@ public class Grid extends JPanel{
 	}
 	
 	/**
-	 * Returns an integer which is the ySize of the grid.
+	 * Returns the size of the grid on the y axis.
 	 * 
 	 * @return
 	 * 				ySize
@@ -167,16 +175,8 @@ public class Grid extends JPanel{
 		return cells[(i+size)%size][(j+size)%size];
 	}
 	
-	/*
-	private void removeCellsFromFrame(){ la usiamo??????
-		for(int i = 0;i < size;i++)
-			for(int j = 0;j < size;j++){
-				remove(cells[i][j]);
-			}		
-	}*/
-	
 	/*	
-	 * Switches the state of the variable cell between dead or alive.
+	 * Switches the state of the variable cell between dead or alive in the actual generation.
 	 * Used for the mouse input.
 	 * 
 	 * @param 
@@ -191,6 +191,7 @@ public class Grid extends JPanel{
 
 	/**
 	 * Changes the state of a cell in the future generation.
+	 * used by the game engine.
 	 * 
 	 * @param cell
 	 * 				cell on the grid
@@ -200,8 +201,8 @@ public class Grid extends JPanel{
 		((GridCell)cell).changeNext();
 	}
 	
-	/**Repaints the frame.
-	 * 
+	/**
+	 * Repaints the frame.
 	 */
 	public void forceUpdate(){
 		repaint();
@@ -220,8 +221,8 @@ public class Grid extends JPanel{
 	}
 	
 	/**
-	 * Changes the state of the cells to the next generation state;
-	 * if is the first generation, makes a list of the living cell.
+	 * Changes the state of the cells to the next generation state.
+	 * if it's the first generation, it makes a list of the living cells to be used later by the reset button
 	 * 
 	 */
 	public void nextGeneration(){
@@ -246,22 +247,22 @@ public class Grid extends JPanel{
 	
 	/**
 	 * The GridCell class implements all the methods of the class Cell.
-	 * Provides an action listener which allows to changes the stat's cell: dead, alive or definitely Killed. 
+	 * Provides an action listener which allows to changes the cell's state: dead, alive or definitely Killed. 
 	 * 
 	 */
 	private class GridCell extends Cell{
 		
-		/*
+		/**
 		 * If true the cell is definitely killed.
 		 */
 		private boolean definitelyDead = false;
 		
-		/*
-		 *State in the actual generation. 
+		/**
+		 * State in the actual generation. 
 		 */
 		private boolean actualGeneration = DEAD;
 		
-		/*
+		/**
 		 * State in the next generation.
 		 */
 		private boolean nextGeneration = DEAD;
@@ -280,8 +281,8 @@ public class Grid extends JPanel{
 			super(x, y);
 			setBackground(Color.BLACK);
 			this.addActionListener(new ActionListener(){
-				/*
-				 * Allows interaction in "adding figure" or "killing" mode or simply changes it's state.
+				/**
+				 * Allows interaction in "adding figure" or "killing" mode or simply changes the state of the cell.
 				 * 
 				 * 
 				 * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
@@ -306,7 +307,7 @@ public class Grid extends JPanel{
 			});
 		}
 		
-		/*
+		/**
 		 * Changes the cell's state in the actual generation.
 		 */
 		public void changeNow(){
@@ -315,7 +316,7 @@ public class Grid extends JPanel{
 			setBackground((actualGeneration)?Color.WHITE:Color.BLACK);
 		}
 		
-		/*
+		/**
 		 * Changes the cell's state in the next generation.
 		 */
 		@Override
@@ -323,16 +324,16 @@ public class Grid extends JPanel{
 			nextGeneration = (actualGeneration)?DEAD:ALIVE;
 		}
 		
-		/*
-		 *Tests if the cell is alive in the actual generation.
+		/**
+		 * Tests if the cell is alive in the actual generation.
 		 */
 		@Override
 		public boolean isAliveNow(){
 			return actualGeneration;
 		}
 		
-		/*
-		 *Swaps the cell's state from the next generation to the actual.
+		/**
+		 * Swaps the cell's state from the next generation to the actual.
 		 */
 		@Override
 		public void swap() {//fai modifica solo se necessario
@@ -342,7 +343,7 @@ public class Grid extends JPanel{
 			}
 		}
 		
-		/*
+		/**
 		 * Reinitializes the cell's state: dead and not definitely dead.
 		 */
 		@Override
@@ -353,7 +354,7 @@ public class Grid extends JPanel{
 			setBackground(Color.BLACK);
 		}
 		
-		/*
+		/**
 		 * Tests if the cell is definitely dead.
 		 */
 		@Override
@@ -377,7 +378,7 @@ public class Grid extends JPanel{
 	}
 	
 	/**
-	 * Brings alive a variable number of cells starting from an initial cell. 
+	 * Brings to life a variable number of cells starting from an initial cell. 
 	 * 
 	 * @param cell
 	 * 				initial cell
@@ -400,7 +401,7 @@ public class Grid extends JPanel{
 	}
 	
 	/**
-	 * Tests if the grid is waiting for figure's position.
+	 * Tests if the grid is waiting for a figure's position.
 	 * 
 	 * @return
 	 * 				true if the grid is waiting for a position
@@ -448,7 +449,7 @@ public class Grid extends JPanel{
 	}
 
 	/**
-	 * Loads the first genertion's cells to the grid. 
+	 * Loads the first generation's cells to the grid. 
 	 * 
 	 */
 	public void loadSnapShot(){
@@ -471,7 +472,7 @@ public class Grid extends JPanel{
 	}
 	
 	/**
-	 * Returns an integer which is the number of generations.
+	 * Returns the number of generations.
 	 * 
 	 * @return
 	 * 				generations number

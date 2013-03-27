@@ -519,7 +519,7 @@ public class Grid extends JPanel{
 	}
 
 	public void loadFromDisk(String path){
-		System.out.println("this is " + path);
+		//System.out.println("this is " + path);
 		snapShot = new Vector<Cell>();
 		Scanner scanner;
 		int x = 0;

@@ -411,6 +411,7 @@ public class GameOfLife extends JFrame {
 	 */
 	private void setOff(){
 		while(true){			
+			textGen.setText("       | Gen " + grid.getGeneration() + " |");
 			File[] list = dir.listFiles();
 			if(grid.checkSaved() && list != null && list.length != 0){
 				load.setEnabled(true);
@@ -430,7 +431,6 @@ public class GameOfLife extends JFrame {
 				System.err.println("Error in setOff() => " + e.getMessage());
 			}
 			if(running){
-				textGen.setText("       | Gen " + grid.getGeneration() + " |");
 				finish = false;
 				synchronized(grid){
 					engine.computeNextGen();					

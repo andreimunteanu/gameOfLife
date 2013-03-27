@@ -79,18 +79,58 @@ public class GameOfLife extends JFrame {
 	private JTextArea textSpeed;
 	
 	/**
-	 * used to get the user's input on a custom number of threads to be used
+	 * used to get the user's input on a custom number of threads to be used by the engine
 	 */
 	private JTextField threadText;
+	
+	/**
+	 * the "Start" button
+	 */
 	private startButton start;
+	
+	/**
+	 * the "Pause" button
+	 */
 	private pauseButton pause;
+	
+	/**
+	 * the "Step" button
+	 */
 	private stepButton step;
+	
+	/**
+	 * the "Reset" button
+	 */
 	private resetButton reset;
+	
+	/**
+	 * the "Clear" button
+	 */
 	private clearButton clear;
+	
+	/**
+	 * the "Kill" button
+	 */
 	private killButton Kill;
+	
+	/**
+	 * the "Oscillators" button
+	 */
 	private Oscillators oscillators;
+	
+	/**
+	 * the "Spaceships" button
+	 */
 	private Spaceships spaceships;
+	
+	/**
+	 * the "Speed" slider
+	 */
 	private SpeedSlider speedSelect;
+	
+	/**
+	 * initial size of the grid
+	 */
 	private int initialSize =  60 * Cell.CELL_SIZE;
 	
 	/**
@@ -101,7 +141,7 @@ public class GameOfLife extends JFrame {
 		new GameOfLife();
 	}
 	
-	/*
+	/**
 	 * 
 	 */
 	public GameOfLife(){

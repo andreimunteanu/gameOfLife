@@ -535,7 +535,7 @@ public class Grid extends JPanel{
 					y = scanner.nextInt();
 					Cell c = new GridCell(x,y);
 					snapShot.add(c);
-					System.out.println("Added cell " + c);
+					//System.out.println("Added cell " + c);
 				}
 				i++;
 			}

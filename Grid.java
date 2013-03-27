@@ -1,6 +1,14 @@
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Scanner;
 import java.util.Vector;
 
 import javax.swing.JPanel;
@@ -14,68 +22,72 @@ import javax.swing.JPanel;
  */
 
 public class Grid extends JPanel{
-	
+
 	/**
 	 * Array that contains size x size cells. 
 	 */
 	private Cell[][] cells;
-	
+
 	/**
 	 * The possible states of the cells.
 	 */
 	private final static boolean ALIVE = true;
 	private final static boolean DEAD = false;
-	
+
 	/**
 	 * Toggles the "killing" mode, where cells are set as definitely dead, as per assignment.
 	 */
 	private static boolean killing = false;
-	
+
 	/**
 	 * Toggles the "adding figure" mode.
 	 * If true the game waits for the user to position the figure.
 	 */
 	private static boolean addingFigure = false;
-	
+
 	/**
 	 * Toggles the "debug" mode.
 	 * If true prints debugging information to the standard output.
 	 */
 	private boolean debug = false;
-	
+
 	/**
 	 * The name of the figure that can be printed on the grid.
 	 * A figure is a specific number of alive cells which have specified position.
 	 */
 	private static String figureName ="";
-	
+
 	/**
 	 * The sizes of the grid.
 	 */
 	private int xSize;
 	private int ySize;
-	
+
 	/**
 	 * Dimensions of the array.
 	 * Number of the game's cells: size*size.
 	 */
 	private int size;
-	
+
 	/**
 	 * list of living cells saved each time the user presses "Start".
 	 */
 	private Vector<Cell> snapShot = new Vector<Cell>();
-	
+
 	/**
 	 * list of cells whose state has been changed by the game engine.
 	 */
 	private Vector<Cell> changedCells = new Vector<Cell>();
-	
+
 	/**
 	 * number of the generation since "Start" has been pressed.
 	 */
 	private int generation = 0;
-	
+
+	private boolean firstSave = true;
+	private boolean saved = true;
+	private final String saveDir = "saved";
+
 	/**
 	 * Constructs a frame based on the integer variable "size", with a specified number of cell, each one initialized as a dead cell.
 	 * 
@@ -87,7 +99,7 @@ public class Grid extends JPanel{
 		initCells();
 		initFrame();
 	}
-	
+
 	/**
 	 * Initializes each cell on the array cells.
 	 */
@@ -97,7 +109,7 @@ public class Grid extends JPanel{
 			for(int j = 0;j < size;j++)
 				cells[i][j] = new GridCell(i,j);
 	}
-	
+
 	/**
 	 * Initializes the size of the grid based on the number of cells and their dimension.
 	 */
@@ -109,7 +121,7 @@ public class Grid extends JPanel{
 		addCellsToFrame();
 		setVisible(true);
 	}	
-	
+
 	/** 
 	 * Adds the cells to the grid.
 	 */
@@ -119,7 +131,7 @@ public class Grid extends JPanel{
 				add(cells[i][j]);
 			}
 	}
-	
+
 	/**
 	 * Sets the grid size based on a new integer variable.
 	 * 
@@ -133,7 +145,7 @@ public class Grid extends JPanel{
 		ySize = (Cell.CELL_SIZE * size);
 		setSize(xSize,ySize);
 	}
-	
+
 	/**
 	 * Returns the size of the grid on the x axis.
 	 * 
@@ -143,7 +155,7 @@ public class Grid extends JPanel{
 	public int getXSize(){
 		return xSize;
 	}
-	
+
 	/**
 	 * Returns the size of the grid on the y axis.
 	 * 
@@ -162,7 +174,7 @@ public class Grid extends JPanel{
 	public int getGridSize(){
 		return size;
 	}
-	
+
 	/**
 	 * Returns a cell from the grid in a specified position.
 	 * 
@@ -176,7 +188,7 @@ public class Grid extends JPanel{
 	public Cell getCell(int i, int j) {
 		return cells[(i+size)%size][(j+size)%size];
 	}
-	
+
 	/*	
 	 * Switches the state of the variable cell between dead or alive in the actual generation.
 	 * Used for the mouse input.
@@ -202,14 +214,14 @@ public class Grid extends JPanel{
 		changedCells.add(cell);
 		((GridCell)cell).changeNext();
 	}
-	
+
 	/**
 	 * Repaints the frame.
 	 */
 	public void forceUpdate(){
 		repaint();
 	}
-	
+
 	/**
 	 * Tests if a cell is alive.
 	 * 
@@ -221,7 +233,7 @@ public class Grid extends JPanel{
 	public boolean isLivingCell(Cell cell) {
 		return cell.isAliveNow();
 	}
-	
+
 	/**
 	 * Changes the state of the cells to the next generation state.
 	 * if it's the first generation, it makes a list of the living cells to be used later by the reset button
@@ -231,11 +243,7 @@ public class Grid extends JPanel{
 		generation++;
 
 		if(generation == 1){
-			for(Cell[] c : cells){
-				for(Cell cell : c)
-					if(cell.isAliveNow())
-						snapShot.add(cell);
-			}
+			saveSnapshot();
 		}
 
 		synchronized(this){
@@ -246,30 +254,30 @@ public class Grid extends JPanel{
 		changedCells = new Vector<Cell>();
 		forceUpdate();
 	}
-	
+
 	/**
 	 * The GridCell class implements all the methods of the class Cell.
 	 * Provides an action listener which allows to changes the cell's state: dead, alive or definitely Killed. 
 	 * 
 	 */
 	private class GridCell extends Cell{
-		
+
 		/**
 		 * If true the cell is definitely killed.
 		 */
 		private boolean definitelyDead = false;
-		
+
 		/**
 		 * State in the actual generation. 
 		 */
 		private boolean actualGeneration = DEAD;
-		
+
 		/**
 		 * State in the next generation.
 		 */
 		private boolean nextGeneration = DEAD;
 		private static final long serialVersionUID = 1L;
-		
+
 		/**
 		 * Constructs a cell in a specified position on the grid.
 		 * Initialized as dead.
@@ -308,7 +316,7 @@ public class Grid extends JPanel{
 				}
 			});
 		}
-		
+
 		/**
 		 * Changes the cell's state in the actual generation.
 		 */
@@ -317,7 +325,7 @@ public class Grid extends JPanel{
 			actualGeneration = nextGeneration;
 			setBackground((actualGeneration)?Color.WHITE:Color.BLACK);
 		}
-		
+
 		/**
 		 * Changes the cell's state in the next generation.
 		 */
@@ -325,7 +333,7 @@ public class Grid extends JPanel{
 		public void changeNext(){
 			nextGeneration = (actualGeneration)?DEAD:ALIVE;
 		}
-		
+
 		/**
 		 * Tests if the cell is alive in the actual generation.
 		 */
@@ -333,7 +341,7 @@ public class Grid extends JPanel{
 		public boolean isAliveNow(){
 			return actualGeneration;
 		}
-		
+
 		/**
 		 * Swaps the cell's state from the next generation to the actual.
 		 */
@@ -344,7 +352,7 @@ public class Grid extends JPanel{
 				setBackground((nextGeneration)?Color.WHITE:Color.BLACK);	
 			}
 		}
-		
+
 		/**
 		 * Reinitializes the cell's state: dead and not definitely dead.
 		 */
@@ -355,7 +363,7 @@ public class Grid extends JPanel{
 			actualGeneration = DEAD;
 			setBackground(Color.BLACK);
 		}
-		
+
 		/**
 		 * Tests if the cell is definitely dead.
 		 */
@@ -365,7 +373,7 @@ public class Grid extends JPanel{
 		}
 
 	}
-	
+
 	/**
 	 * Sets the figure that will be printed on the grid based on a string variable.
 	 * A figure is a variable number of alive cells with a specific position.
@@ -378,7 +386,7 @@ public class Grid extends JPanel{
 		killing = false;
 		this.figureName = figureName;
 	}
-	
+
 	/**
 	 * Brings to life a variable number of cells starting from an initial cell. 
 	 * 
@@ -401,7 +409,7 @@ public class Grid extends JPanel{
 			cell.changeNow();
 		}
 	}
-	
+
 	/**
 	 * Tests if the grid is waiting for a figure's position.
 	 * 
@@ -411,7 +419,7 @@ public class Grid extends JPanel{
 	public boolean isAddingFigure(){
 		return addingFigure;
 	}
-	
+
 	/**
 	 * Stops the "waiting for figure's position" mode of the grid.
 	 * 
@@ -419,7 +427,7 @@ public class Grid extends JPanel{
 	public void stopAddingFigure(){
 		addingFigure = false;
 	}
-	
+
 	/**
 	 * Enables or disables the killing cell mode.
 	 * A killed cell is definitely dead.
@@ -428,7 +436,7 @@ public class Grid extends JPanel{
 	public void setKilling(){
 		killing = !killing;
 	}
-	
+
 	/**
 	 * Reinitializes the grid's cells. 
 	 * 
@@ -438,7 +446,7 @@ public class Grid extends JPanel{
 			for(int j = 0;j < size;j++)
 				reset(cells[i][j]);
 	}
-	
+
 	/**
 	 * Resets a specified cell's state(dead).
 	 * 
@@ -463,7 +471,7 @@ public class Grid extends JPanel{
 		}
 		resetGeneration();
 	}
-	
+
 	/**
 	 * Resets the number of generations and clears the list of the alive cells of the first generation. 
 	 * 
@@ -472,7 +480,7 @@ public class Grid extends JPanel{
 		snapShot = new Vector<Cell>();
 		generation = 0;		
 	}
-	
+
 	/**
 	 * Returns the number of generations.
 	 * 
@@ -482,12 +490,84 @@ public class Grid extends JPanel{
 	public int getGeneration() {
 		return generation;
 	}
-	
+
 	/**
 	 * Enables or disables the "debug mode".
 	 * 
 	 */
 	public void toggleDebug(){
 		debug = !debug;
+	}
+
+	public void saveSnapshot() {
+		snapShot = new Vector<Cell>();
+		for(Cell[] c : cells){
+			for(Cell cell : c)
+				if(cell.isAliveNow())
+					snapShot.add(cell);
 		}
+	}
+
+	public boolean checkSaved() {
+		boolean temp = saved;
+		saved = false;
+		return temp;
+	}
+
+	public String getSaveDir(){
+		return saveDir;
+	}
+
+	public void loadFromDisk(String path){
+		System.out.println("this is " + path);
+		snapShot = new Vector<Cell>();
+		Scanner scanner;
+		int x = 0;
+		int y = 0;
+		int i = 0;
+		
+		try {
+			scanner = new Scanner(new File(path));
+			while(scanner.hasNextInt()){
+				if(i % 2 == 0)
+					x = scanner.nextInt();
+				else{
+					y = scanner.nextInt();
+					Cell c = new GridCell(x,y);
+					snapShot.add(c);
+					System.out.println("Added cell " + c);
+				}
+				i++;
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		loadSnapShot();
+	}
+
+	public void saveToDisk() {
+		if(snapShot.isEmpty()){
+			return;
+		}
+		if(firstSave){
+			File dir = new File(saveDir);
+			dir.mkdirs();
+			firstSave = false;
+		}
+
+		DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+		Date date = new Date();
+		String fileName = "" + saveDir + "/" + dateFormat.format(date) + "" + System.currentTimeMillis() + ".txt";
+
+		try {
+			FileWriter out = new FileWriter(fileName);
+			for(Cell c : snapShot)
+				out.write(c.auxGetX() + " " + c.auxGetY() + " ");
+			out.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		saved = true;
+	}
 }

@@ -7,8 +7,9 @@ import javax.swing.JPanel;
 
 /**
  * 
- * @author 
- *
+ * @author <A HREF="mailto:niccolo.marastoni@studenti.univr.it">Niccolò Marastoni</A>
+ * @author <A HREF="mailto:andrei.munteanu@studenti.univr.it">Andrei Munteanu</A>
+ * 
  */
 
 public class Grid extends JPanel{

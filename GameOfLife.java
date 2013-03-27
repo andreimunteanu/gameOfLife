@@ -87,6 +87,7 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 		reset.setEnabled(false);
 
 		textSpeed.setText("____________________\n    Select Speed");
+		textSpeed.setEditable(false);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		getContentPane().setLayout(null);
 		setSize(initialSize, initialSize + (8 * Cell.CELL_SIZE));
@@ -497,6 +498,9 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 			this.addActionListener(new ActionListener(){
 				@Override
 				public void actionPerformed(ActionEvent e) {
+					reset.setEnabled(false);
+					pause.setEnabled(false);
+					start.setEnabled(true);
 					running = false;
 					while(!finish);
 
@@ -505,8 +509,6 @@ public class GameOfLife extends JFrame {// regole del gioco: premi kill e rimane
 
 					grid.loadSnapShot();
 					grid.forceUpdate();
-					reset.setEnabled(false);
-					start.setEnabled(true);
 				}
 			});
 		}

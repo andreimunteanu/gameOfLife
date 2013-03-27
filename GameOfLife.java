@@ -2,7 +2,10 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Set;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -26,113 +29,119 @@ import javax.swing.event.ChangeListener;
  */
 
 public class GameOfLife extends JFrame {
-	
+
 	/**
 	 * The grid where all the cells will roam
 	 */
 	private Grid grid;
-	
+
 	/**
 	 * The game engine
 	 */
 	private Engine engine;			
-	
+
 	/**
 	 * Toggles the "running" state of the game, used mainly by the "Start" and "Pause" buttons
 	 */
 	private boolean running = false;	
-	
+
 	/**
 	 * Set by the game main loop, used to not interfere with the engine while it's working
 	 */
 	private boolean finish = true;
-	
+
 	/**
 	 * Number of buttons in the lower area, used to customize the size while keeping proportions
 	 */
 	private int nButtons = 5;
-	
+
 	/**
 	 * variable used to customize the speed via the speed selector slider
 	 */
 	private final int baseSpeed = 202;
-	
+
 	/**
 	 * initial speed of the game, measured in milliseconds between each generation
 	 * (smaller number equals faster speed)
 	 */
 	private int speed = 80;
-	
+
 	/**
 	 * menu bar
 	 */
 	private JMenuBar menu;
-	
+
 	/**
 	 * shows the number of the actual generation, constantly refreshed
 	 */
 	private JTextArea textGen;
-	
+
 	/**
 	 * static text area 
 	 */
 	private JTextArea textSpeed;
-	
+
 	/**
 	 * used to get the user's input on a custom number of threads to be used by the engine
 	 */
 	private JTextField threadText;
-	
+
 	/**
 	 * the "Start" button
 	 */
 	private startButton start;
-	
+
 	/**
 	 * the "Pause" button
 	 */
 	private pauseButton pause;
-	
+
 	/**
 	 * the "Step" button
 	 */
 	private stepButton step;
-	
+
 	/**
 	 * the "Reset" button
 	 */
 	private resetButton reset;
-	
+
 	/**
 	 * the "Clear" button
 	 */
 	private clearButton clear;
-	
+
 	/**
 	 * the "Kill" button
 	 */
 	private killButton Kill;
-	
+
 	/**
 	 * the "Oscillators" button
 	 */
 	private Oscillators oscillators;
-	
+
 	/**
 	 * the "Spaceships" button
 	 */
 	private Spaceships spaceships;
-	
+
 	/**
 	 * the "Speed" slider
 	 */
 	private SpeedSlider speedSelect;
-	
+
 	/**
 	 * initial size of the grid
 	 */
 	private int initialSize =  60 * Cell.CELL_SIZE;
-	
+
+	private JMenu load;
+
+	private File dir;
+
+	private Set<String> savedFiles;
+
 	/**
 	 * 
 	 * @param args
@@ -140,13 +149,15 @@ public class GameOfLife extends JFrame {
 	public static void main(String[] args) {
 		new GameOfLife();
 	}
-	
+
 	/**
 	 * 
 	 */
 	public GameOfLife(){
 		grid = new Grid(80);
 		engine = new Engine(grid);
+		dir = new File(grid.getSaveDir());
+		savedFiles = new HashSet<String>();
 		initFrame();
 		setOff();
 	}
@@ -166,7 +177,7 @@ public class GameOfLife extends JFrame {
 		textGen = new JTextArea(); // bisogna trovare un modo per allinearla a destra
 		textSpeed = new JTextArea();
 		speedSelect = new SpeedSlider();
-		
+
 		textGen.setEditable(false);
 		pause.setEnabled(false);
 		reset.setEnabled(false);
@@ -202,14 +213,14 @@ public class GameOfLife extends JFrame {
 	private void die(){
 		System.exit(0);
 	}
-	
+
 	/*
 	 * 
 	 */
 	private void forceUpdate(){
 		getContentPane().repaint();
 	}
-	
+
 	/*
 	 * 
 	 * @param size
@@ -223,7 +234,7 @@ public class GameOfLife extends JFrame {
 		grid.forceUpdate();
 		getContentPane().repaint();
 	}
-	
+
 	/*
 	 * 
 	 * 
@@ -242,7 +253,7 @@ public class GameOfLife extends JFrame {
 		textSpeed.setBounds(newSize,111,115,30);
 		speedSelect.setBounds(newSize,141,115,200);
 	}
-	
+
 	/*
 	 * 
 	 * 
@@ -255,7 +266,7 @@ public class GameOfLife extends JFrame {
 			engine.setCoreN(Integer.parseInt(text));
 		}
 	}
-	
+
 	/*
 	 * 
 	 * 
@@ -271,7 +282,7 @@ public class GameOfLife extends JFrame {
 			GameOfLife.this.resizeGame(size);				
 		}	
 	}
-	
+
 	/*
 	 * 
 	 * @author 
@@ -289,10 +300,21 @@ public class GameOfLife extends JFrame {
 			}
 		}
 	}
-	
+
 	/*
 	 * 
 	 */
+
+	private class saveActionListener implements ActionListener{
+
+		@Override
+		public void actionPerformed(ActionEvent arg0) {
+			running = false;
+			while(!finish);
+			grid.saveSnapshot();
+			grid.saveToDisk();
+		}
+	}
 	private void initMenu() {
 		menu = new JMenuBar();
 		menu.setOpaque(true);
@@ -302,7 +324,8 @@ public class GameOfLife extends JFrame {
 		JMenu size = new JMenu("Size");
 		JMenu threads = new JMenu("Threads");
 		JMenu edit = new JMenu("Edit");
-
+		JMenuItem save = new JMenuItem("Save");
+		load = new JMenu("Load");
 		JMenuItem exit = new JMenuItem("Exit");
 		JMenuItem debug = new JMenuItem("Debug");
 		JMenuItem thread2 = new JMenuItem("2");
@@ -317,12 +340,14 @@ public class GameOfLife extends JFrame {
 		JMenuItem size4 = new JMenuItem("70 x 70");
 		threadText.addActionListener(new textActionListener());
 
+		load.setEnabled(false);
+		save.addActionListener(new saveActionListener());
 		exit.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				GameOfLife.this.die();
 			} });
-		
+
 		debug.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -333,7 +358,7 @@ public class GameOfLife extends JFrame {
 		thread4.addActionListener(new threadActionListener(4));
 		thread8.addActionListener(new threadActionListener(8));
 		thread16.addActionListener(new threadActionListener(16));
-		
+
 		size1.addActionListener(new sizeActionListener(40));
 		size2.addActionListener(new sizeActionListener(50));
 		size3.addActionListener(new sizeActionListener(60));
@@ -353,27 +378,59 @@ public class GameOfLife extends JFrame {
 		threads.addSeparator();
 		threads.add(threadMan);
 		threadMan.add(threadText);
+		file.add(save);
+		file.add(load);
 		file.addSeparator();
 		file.add(exit);
 		menu.add(file);
 		menu.add(edit);
 		setJMenuBar(menu);
 	}
-	
+
+	private class SaveButton extends JMenuItem{
+		private String name;
+		public SaveButton(String name){
+			super(name);
+			this.name = name;
+		}
+	}
+
+	private class saveButtonActionListener implements ActionListener{
+		private String name;
+		public saveButtonActionListener(String name){
+			this.name = name;
+		}
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			grid.loadFromDisk(name);
+		}
+	}
+
 	/*
 	 * 
 	 */
 	private void setOff(){
-		while(true){
-			
-			textGen.setText("       | Gen " + grid.getGeneration() + " |");
-			
+		while(true){			
+			File[] list = dir.listFiles();
+			if(grid.checkSaved() && list != null && list.length != 0){
+				load.setEnabled(true);
+				for(File f : list){
+					String name = f.toString();
+					if(!savedFiles.contains(name)){
+						savedFiles.add(name);
+						SaveButton save = new SaveButton(name);
+						save.addActionListener(new saveButtonActionListener(name));
+						load.add(save);
+					}
+				}
+			}
 			try {
 				Thread.sleep(speed);
 			} catch (InterruptedException e) {
 				System.err.println("Error in setOff() => " + e.getMessage());
 			}
 			if(running){
+				textGen.setText("       | Gen " + grid.getGeneration() + " |");
 				finish = false;
 				synchronized(grid){
 					engine.computeNextGen();					
@@ -385,7 +442,7 @@ public class GameOfLife extends JFrame {
 			}
 		}
 	}
-	
+
 	/*
 	 * 
 	 * 
@@ -401,8 +458,8 @@ public class GameOfLife extends JFrame {
 		}
 		@Override
 		public void actionPerformed(ActionEvent e) {
-				grid.setFigure(figureName);
-				waitingWindow.show(GameOfLife.this, grid.getXSize(), 0);
+			grid.setFigure(figureName);
+			waitingWindow.show(GameOfLife.this, grid.getXSize(), 0);
 		}
 	}
 
@@ -435,7 +492,7 @@ public class GameOfLife extends JFrame {
 			});
 		}
 	}
-	
+
 	/*
 	 * 
 	 * 
@@ -465,7 +522,7 @@ public class GameOfLife extends JFrame {
 			});
 		}
 	}
-	
+
 	/*
 	 * 
 	 * 
@@ -493,7 +550,7 @@ public class GameOfLife extends JFrame {
 			setOrientation(JSlider.VERTICAL);
 		}
 	}
-	
+
 	/*
 	 * 
 	 * 
@@ -519,7 +576,7 @@ public class GameOfLife extends JFrame {
 			});
 		}
 	}
-	
+
 	/*
 	 * 
 	 * 
@@ -541,7 +598,7 @@ public class GameOfLife extends JFrame {
 			});
 		}
 	}
-	
+
 	/*
 	 * 
 	 * 
@@ -570,7 +627,7 @@ public class GameOfLife extends JFrame {
 			});
 		}
 	}
-	
+
 	/*
 	 * 
 	 * 
@@ -626,7 +683,7 @@ public class GameOfLife extends JFrame {
 			});
 		}
 	}
-	
+
 	/*
 	 * 
 	 * 

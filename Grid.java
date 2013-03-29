@@ -14,6 +14,10 @@ import java.util.Vector;
 import javax.swing.JPanel;
 
 /**
+ * The class Grid implements a resizable frame which contains a size*size number of 
+ * cells, each of them with a unique position. Provides methods to: load a saved 
+ * generation and interact with the contained cells in order to check or change
+ * their state and killing them definitely.
  * 
  * @author <A HREF="mailto:niccolo.marastoni@studenti.univr.it">Niccolò Marastoni</A>
  * @author <A HREF="mailto:andrei.munteanu@studenti.univr.it">Andrei Munteanu</A>
@@ -23,69 +27,80 @@ import javax.swing.JPanel;
 
 public class Grid extends JPanel{
 
-	/**
+	/*
 	 * Array that contains size x size cells. 
 	 */
 	private Cell[][] cells;
 
-	/**
+	/*
 	 * The possible states of the cells.
 	 */
 	private final static boolean ALIVE = true;
 	private final static boolean DEAD = false;
 
-	/**
+	/*
 	 * Toggles the "killing" mode, where cells are set as definitely dead, as per assignment.
 	 */
 	private static boolean killing = false;
 
-	/**
+	/*
 	 * Toggles the "adding figure" mode.
 	 * If true the game waits for the user to position the figure.
 	 */
 	private static boolean addingFigure = false;
 
-	/**
+	/*
 	 * Toggles the "debug" mode.
 	 * If true prints debugging information to the standard output.
 	 */
 	private boolean debug = false;
 
-	/**
+	/*
 	 * The name of the figure that can be printed on the grid.
 	 * A figure is a specific number of alive cells which have specified position.
 	 */
 	private static String figureName ="";
 
-	/**
+	/*
 	 * The sizes of the grid.
 	 */
 	private int xSize;
 	private int ySize;
 
-	/**
+	/*
 	 * Dimensions of the array.
 	 * Number of the game's cells: size*size.
 	 */
 	private int size;
 
-	/**
+	/*
 	 * list of living cells saved each time the user presses "Start".
 	 */
 	private Vector<Cell> snapShot = new Vector<Cell>();
 
-	/**
+	/*
 	 * list of cells whose state has been changed by the game engine.
 	 */
 	private Vector<Cell> changedCells = new Vector<Cell>();
 
-	/**
+	/*
 	 * number of the generation since "Start" has been pressed.
 	 */
 	private int generation = 0;
 
+	/*
+	 * 
+	 */
 	private boolean firstSave = true;
+	
+	/*
+	 * 
+	 */
 	private boolean saved = true;
+	
+	/*
+	 * 
+	 */
 	private final String saveDir = "saved";
 
 	/**
@@ -100,7 +115,7 @@ public class Grid extends JPanel{
 		initFrame();
 	}
 
-	/**
+	/*
 	 * Initializes each cell on the array cells.
 	 */
 	private void initCells(){ 
@@ -110,7 +125,7 @@ public class Grid extends JPanel{
 				cells[i][j] = new GridCell(i,j);
 	}
 
-	/**
+	/*
 	 * Initializes the size of the grid based on the number of cells and their dimension.
 	 */
 	private void initFrame(){
@@ -122,7 +137,7 @@ public class Grid extends JPanel{
 		setVisible(true);
 	}	
 
-	/** 
+	/* 
 	 * Adds the cells to the grid.
 	 */
 	private void addCellsToFrame() {
@@ -255,24 +270,24 @@ public class Grid extends JPanel{
 		forceUpdate();
 	}
 
-	/**
+	/*
 	 * The GridCell class implements all the methods of the class Cell.
 	 * Provides an action listener which allows to changes the cell's state: dead, alive or definitely Killed. 
 	 * 
 	 */
 	private class GridCell extends Cell{
 
-		/**
+		/*
 		 * If true the cell is definitely killed.
 		 */
 		private boolean definitelyDead = false;
 
-		/**
+		/*
 		 * State in the actual generation. 
 		 */
 		private boolean actualGeneration = DEAD;
 
-		/**
+		/*
 		 * State in the next generation.
 		 */
 		private boolean nextGeneration = DEAD;
@@ -447,7 +462,7 @@ public class Grid extends JPanel{
 				reset(cells[i][j]);
 	}
 
-	/**
+	/*
 	 * Resets a specified cell's state(dead).
 	 * 
 	 * @param cell
@@ -498,7 +513,10 @@ public class Grid extends JPanel{
 	public void toggleDebug(){
 		debug = !debug;
 	}
-
+	
+	/**
+	 * 
+	 */
 	public void saveSnapshot() {
 		snapShot = new Vector<Cell>();
 		for(Cell[] c : cells){
@@ -507,17 +525,34 @@ public class Grid extends JPanel{
 					snapShot.add(cell);
 		}
 	}
-
+	
+	/**
+	 * 
+	 * @return
+	 */
 	public boolean checkSaved() {
 		boolean temp = saved;
 		saved = false;
 		return temp;
 	}
-
+	
+	/**
+	 * Return a string which contains the name of the directory of the saved files. 
+	 * 
+	 * @return
+	 * 			the direcory's name
+	 */	
 	public String getSaveDir(){
 		return saveDir;
 	}
-
+	
+	/**
+	 * Loads from a specific path, contained in a string, a file
+	 * which contains a specific generation of cells with a specified position.
+	 * 
+	 * @param path
+	 * 				position of the files 	
+	 */
 	public void loadFromDisk(String path){
 		//System.out.println("this is " + path);
 		snapShot = new Vector<Cell>();
@@ -544,7 +579,11 @@ public class Grid extends JPanel{
 		}
 		loadSnapShot();
 	}
-
+	
+	/**
+	 * Saves the actual generation on the disk in the directory saveDir
+	 * located in the game's working directory.
+	 */
 	public void saveToDisk() {
 		if(snapShot.isEmpty()){
 			return;

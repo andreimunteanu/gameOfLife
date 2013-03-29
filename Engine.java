@@ -1,26 +1,49 @@
 
 /**
+ * The Engine class runs the core computations of the game by providing:
+ * <ul>
+ * <li> the method "computeNextGen()" that is used by the main game loop and the "Step" button. 
+ * <li> the "debug" function, that will print to the standard output <i>hopefully</i> helpful information about the compute times and the workings of
+ * the threads
+ * <li> the "setCoreN()" method, that will change the number of working threads, for testing purposes.
+ * </ul>
  * 
- * @author 
- *
+ * @author <A HREF="mailto:niccolo.marastoni@studenti.univr.it">Niccolò Marastoni</A>
+ * @author <A HREF="mailto:andrei.munteanu@studenti.univr.it">Andrei Munteanu</A>
+ * @version 1.0
+ * 
  */
 public class Engine {
 	
-	/**
-	 * 
+	/*
+	 * Used to enable/disable debug mode.
 	 */
 	private boolean debug = false;
+	
+	/*
+	 * The grid, where all cells will spawn and eventually die.
+	 */
 	private Grid grid;
+	
+	/*
+	 * Working position, number of the column where a slave will directly compute.
+	 */
 	private Integer workingPos = 0;
-	private int coreN =Runtime.getRuntime().availableProcessors();
+	
+	/*
+	 * Number of threads, initialized by default as the number of cores in the user's computer.
+	 */
+	private int coreN = Runtime.getRuntime().availableProcessors();
 	private Integer runningSlaves = coreN;
 	private boolean changedCoreN = false;
 	private long time;
 	private Thread[] slaves;
 	
 	/**
+	 * Constructs an engine, sets the grid where it will work and initializes the threads.
 	 * 
 	 * @param grid
+	 * 			the game's grid
 	 */
 	public Engine(Grid grid){
 		this.grid = grid;
@@ -28,7 +51,8 @@ public class Engine {
 	}
 	
 	/**
-	 * 
+	 * Computes the next generation of living cells by calling the slaves and initializes the
+	 * threads again in case the user has changed their number mid-game.
 	 */
 	public void computeNextGen() {
 		synchronized(grid){
@@ -42,14 +66,16 @@ public class Engine {
 			runSlaves();
 			grid.nextGeneration();
 			if(debug)
-				System.out.println("================= FINISHED COMPUTING NEXT GEN ================ \nTIME ELAPSED = " + (System.currentTimeMillis() - time));
+				System.out.println("================= FINISHED COMPUTING NEXT GEN ================ \nTIME ELAPSED = " 
+						+ (System.currentTimeMillis() - time) );
 		}
 
 	}
 	
 	/**
+	 * Sets the new number of threads, if the user changes it.
 	 * 
-	 * @param coreN
+	 * @param coreN number of threads to be used to compute the next generation.
 	 */
 	public void setCoreN(int coreN){
 		if(debug)
@@ -61,7 +87,7 @@ public class Engine {
 	}
 	
 	/**
-	 * 
+	 * Toggles the debug function and prints to the standard output whether it has been enabled or disabled.
 	 */
 	public void toggleDebug(){
 		grid.toggleDebug();
@@ -70,7 +96,8 @@ public class Engine {
 	}
 	
 	/*
-	 * 
+	 * Starts a new Synchronizer object, then it creates as many slaves as set in coreN and starts them all,
+	 * then waits for the Synchronizer to end.
 	 */
 	private void initThreads(){
 		if(debug)
@@ -92,7 +119,7 @@ public class Engine {
 	}
 	
 	/*
-	 * 
+	 * Creates and starts a new Synchronizer object and waits for it to end.
 	 */
 	private void runSlaves(){
 		runningSlaves = coreN;
@@ -107,14 +134,13 @@ public class Engine {
 	}
 	
 	/*
-	 * 
-	 * 
-	 *
+	 * Synchronizer object, needed to wake up waiting threads before computing a new generation
 	 */
 	private class Synchronizer extends Thread{
 		
 		/*
-		 * 
+		 * Wakes up every thread that is waiting, then checks every 20 ms to see if they have finished
+		 * and if they have, it returns.
 		 */
 		public void run(){
 			workingPos = 0;
@@ -137,15 +163,14 @@ public class Engine {
 	}
 	
 	/*
-	 * 
-	 *
-	 *	
+	 * Slaves are threads that will actually work on the evolution of every generation.
 	 */
 	private class Slave extends Thread{
 		private boolean canWork = false;
 		
 		/*
-		 * 
+		 * A slave takes the number of a column and processes (with compute(x)) every cell in that subset, until the number
+		 * exceeds the size of the grid, then it decreases the number of running slaves and waits to be notified.
 		 */
 		public void run(){
 			int x = 0;
@@ -170,8 +195,11 @@ public class Engine {
 		}
 		
 		/*
+		 * Takes a column on the grid and for every living cell it checks if it has enough neighbors to stay alive (2 or 3)
+		 * and for every dead cell it checks if it has enough neighbors to come back to life (3).
 		 * 
 		 * @param x
+		 * 		number of the column where the thread is working.
 		 */
 		private void compute(int x){
 			int y = 0;
@@ -192,14 +220,14 @@ public class Engine {
 		}
 		
 		/*
-		 *
+		 * Looks around the given cell to count how many living neighbors there are, then returns that number.
 		 * 
 		 * @param cell
-		 * @return
+		 * 			cell that is being computed
+		 * @return the number of neighbors that are living cells.
 		 */
 		private int watchNeighbors(Cell cell){
 			int count = 0;
-	//		int gridSize = grid.getGridSize();
 			int xStart = (cell.auxGetX() - 1);
 			int xStop = xStart + 3;
 			int yStart = (cell.auxGetY() - 1);

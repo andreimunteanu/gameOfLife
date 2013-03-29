@@ -1,9 +1,18 @@
 import javax.swing.JButton;
 
 /**
+ * The Cell abstract class provides the other classes with informations about the cell(position and size)
+ * and ways to interact with it, such as:
+ * <ul>
+ * <li> getting its position
+ * <li> getting the state (alive/dead/definitely dead)
+ * <li> changing its state
+ * </ul>
  * 
+ * @author <A HREF="mailto:niccolo.marastoni@studenti.univr.it">Niccolò Marastoni</A>
+ * @author <A HREF="mailto:andrei.munteanu@studenti.univr.it">Andrei Munteanu</A>
+ * @version 1.0
  * 
- *
  */
 public abstract class Cell extends JButton{
 	

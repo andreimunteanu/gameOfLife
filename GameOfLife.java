@@ -21,16 +21,25 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 /**
- * The GameOfLife class implements a resizable frame which contains: a grid of cells, 
- * buttons to interact whit the state's game (start, pause, reset, clear), a slider to
- * modify the changing generation speed. Allows to: toggle the "killing" mode, resize 
- * the frame's dimension, change the number of the working threads, toggle the debug mode, 
- * load and save on file the actual generation, position on the grid a "figure", particular 
- * generation of cells.
+ * The GameOfLife class implements a resizable frame that contains: 
+ * <ul>
+ * <li> a grid of cells
+ * <li> buttons to interact with the game's state (start, pause, reset, clear)
+ * <li> a slider to modify the change of generation speed. 
+ * </ul>
+ * It allows to: 
+ * <ul>
+ * <li> toggle the "killing" mode
+ * <li> resize the frame
+ * <li> change the number of the working threads
+ * <li> toggle the debug mode, 
+ * <li> load and save on file the actual generation
+ * <li> position on the grid a "figure", particular generation of cells.
+ * </ul>
  * 
  * @author <A HREF="mailto:niccolo.marastoni@studenti.univr.it">Niccolò Marastoni</A>
  * @author <A HREF="mailto:andrei.munteanu@studenti.univr.it">Andrei Munteanu</A>
- * @version %I%, %G%
+ * @version 1.0
  * 
  */
 
@@ -168,7 +177,7 @@ public class GameOfLife extends JFrame {
 	}
 
 	/**
-	 * Constructs a the game: initializes the frame and its components, 
+	 * Constructs a the game: it initializes the frame and its components, 
 	 * the grid, the engine and the saving directory.
 	 */
 	public GameOfLife(){
@@ -205,7 +214,7 @@ public class GameOfLife extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		getContentPane().setLayout(null);
 		setSize(initialSize, initialSize + (8 * Cell.CELL_SIZE));
-		setResizable(true);
+		setResizable(false);
 
 		setLocation(10,10);
 		getContentPane().add(grid);
@@ -268,9 +277,7 @@ public class GameOfLife extends JFrame {
 	}
 
 	/*
-	 * 
-	 * 
-	 *
+	 * Takes the manual input from the user to set an arbitrary number of threads.
 	 */
 	private class textActionListener implements ActionListener{
 		@Override
@@ -281,9 +288,7 @@ public class GameOfLife extends JFrame {
 	}
 
 	/*
-	 * 
-	 * 
-	 *
+	 * Action listener for the various resize options of the game.
 	 */
 	private class sizeActionListener implements ActionListener{
 		private int size;
@@ -298,7 +303,6 @@ public class GameOfLife extends JFrame {
 
 	/*
 	 * Sets the number of the threads which work on the cells.
-	 *
 	 */
 	private class threadActionListener implements ActionListener{
 		private int coreN;
@@ -314,7 +318,7 @@ public class GameOfLife extends JFrame {
 	}
 
 	/*
-	 * 
+	 * Pauses the game and calls functions in grid to save the game to a text file.
 	 */
 	private class saveActionListener implements ActionListener{
 
@@ -404,18 +408,16 @@ public class GameOfLife extends JFrame {
 	}
 
 	/*
-	 * 
+	 * Each save file in the sub-menu "load" is a SaveButton
 	 */
 	private class SaveButton extends JMenuItem{
-		private String name;
 		public SaveButton(String name){
 			super(name);
-			this.name = name;
 		}
 	}
 	
 	/*
-	 * 
+	 * Calls a function in grid to load from disk the corresponding file.
 	 */
 	private class saveButtonActionListener implements ActionListener{
 		private String name;
@@ -429,7 +431,7 @@ public class GameOfLife extends JFrame {
 	}
 
 	/*
-	 * Runs the game, prints the number of the generation
+	 * Runs the game, prints the number of the generation.
 	 */
 	private void runGame(){
 		while(true){			
@@ -457,7 +459,7 @@ public class GameOfLife extends JFrame {
 	}
 	
 	/*
-	 * Verifies if there are saved file, add's the to the load menu.
+	 * Verifies if there are saved files and adds them to the load menu.
 	 */
 	private void checkFiles(){
 		File[] list = dir.listFiles();
@@ -476,8 +478,8 @@ public class GameOfLife extends JFrame {
 	}
 
 	/*
-	 *Sets the figure's name and shows a Popupwindow to inform the user 
-	 *that the game is waiting for the position of the figure.
+	 * Sets the figure's name and shows a pop-up window to inform the user 
+	 * that the game is waiting for the position of the figure.
 	 */
 	private class figuresActionListener implements ActionListener{
 		private String figureName;
@@ -495,10 +497,8 @@ public class GameOfLife extends JFrame {
 	}
 
 	/*
-	 * 
-	 * Oscillators button. When pressed shows a list of oscillator
-	 * that the user can print on the screen.
-	 *
+	 * Oscillators button. When pressed it shows a list of oscillators
+	 * that the user can put on the grid.
 	 */
 	private class Oscillators extends JButton{
 		protected Oscillators(){
@@ -526,9 +526,8 @@ public class GameOfLife extends JFrame {
 	}
 
 	/*
-	 * Spaceships button. When pressed shows a list of spaceships 
+	 * Spaceships button. When pressed it shows a list of spaceships 
 	 * that the user can print on the screen.
-	 * 
 	 */
 	private class Spaceships extends JButton{
 		protected Spaceships(){
@@ -561,9 +560,8 @@ public class GameOfLife extends JFrame {
 	}
 
 	/*
-	 * Slider which modifies the changing generation speed.
+	 * Slider that modifies the changing generation speed.
 	 * min = 1 sec, max = 3 millisec.
-	 *
 	 */
 	private class SpeedSlider extends JSlider{
 		private SpeedSlider(){
@@ -589,9 +587,7 @@ public class GameOfLife extends JFrame {
 	}
 
 	/*
-	 * 
-	 * Start button which makes the game run.
-	 *
+	 * Start button that makes the game run.
 	 */
 	private class startButton extends JButton{
 		protected startButton(){
@@ -615,9 +611,7 @@ public class GameOfLife extends JFrame {
 	}
 
 	/*
-	 * 
 	 * Pause button. Pauses the game.
-	 *
 	 */
 	private class pauseButton extends JButton{
 		protected pauseButton(){
@@ -637,9 +631,7 @@ public class GameOfLife extends JFrame {
 	}
 
 	/*
-	 * 
-	 * Step button. When pressed change the actual generation to the next and pauses the game.
-	 *
+	 * Step button. When pressed, it changes the actual generation to the next and pauses the game.
 	 */
 	private class stepButton extends JButton{
 		protected stepButton(){
@@ -666,9 +658,7 @@ public class GameOfLife extends JFrame {
 	}
 
 	/*
-	 * Reset button. Turns back the grid to the first generation.
-	 * 
-	 *
+	 * Reset button. Resets the game to the first generation.
 	 */
 	private class resetButton extends JButton{
 		protected resetButton(){
@@ -694,9 +684,7 @@ public class GameOfLife extends JFrame {
 	}
 
 	/*
-	 * 
-	 *Clear button. When pressed changes the state of all cells to dead.
-	 *
+	 *Clear button. When pressed it clears the grid.
 	 */
 	private class clearButton extends JButton{
 		protected clearButton(){
@@ -723,8 +711,6 @@ public class GameOfLife extends JFrame {
 
 	/*
 	 * Kill button. Toggles the "killing" mode.
-	 * 
-	 *
 	 */
 	private class killButton extends JButton{
 		protected killButton(){

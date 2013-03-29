@@ -505,11 +505,16 @@ public class GameOfLife extends JFrame {
 			setBackground(Color.WHITE);
 			final JPopupMenu spaceshipsMenu = new JPopupMenu();
 			final JMenuItem glider = new JMenuItem("Glider");
-			final JMenuItem lwss = new JMenuItem("LWSS");			
+			final JMenuItem lwss = new JMenuItem("LWSS");
+			final JMenuItem fireworks = new JMenuItem("Fireworks");
+			
 			glider.addActionListener(new figuresActionListener("glider"));
 			lwss.addActionListener(new figuresActionListener("lwss"));
+			fireworks.addActionListener(new figuresActionListener("fireworks"));
+			
 			spaceshipsMenu.add(glider);
 			spaceshipsMenu.add(lwss);
+			spaceshipsMenu.add(fireworks);
 			this.addActionListener(new ActionListener(){
 				@Override
 				public void actionPerformed(ActionEvent e){
@@ -704,4 +709,3 @@ public class GameOfLife extends JFrame {
 		}
 	}
 }
-

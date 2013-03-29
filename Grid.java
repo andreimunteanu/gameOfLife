@@ -14,14 +14,14 @@ import java.util.Vector;
 import javax.swing.JPanel;
 
 /**
- * The class Grid implements a resizable frame which contains a size*size number of 
- * cells, each of them with a unique position. Provides methods to: load a saved 
+ * The Grid class implements a resizable frame that contains a size*size number of 
+ * cells, each of them with a unique position. It provides methods to load a saved 
  * generation and interact with the contained cells in order to check or change
  * their state and killing them definitely.
  * 
  * @author <A HREF="mailto:niccolo.marastoni@studenti.univr.it">Niccolò Marastoni</A>
  * @author <A HREF="mailto:andrei.munteanu@studenti.univr.it">Andrei Munteanu</A>
- * @version %I%, %G%
+ * @version 1.0
  * 
  */
 
@@ -515,7 +515,8 @@ public class Grid extends JPanel{
 	}
 	
 	/**
-	 * 
+	 * Saves a snapshot of all living cells in a vector, which can then be saved to disk in a text file
+	 * or be used to reset the cells to a previous state.
 	 */
 	public void saveSnapshot() {
 		snapShot = new Vector<Cell>();
@@ -527,8 +528,10 @@ public class Grid extends JPanel{
 	}
 	
 	/**
+	 * Used by GameOfLife to keep the "load" button updated with the latest save files.
 	 * 
-	 * @return
+	 * @return 
+	 *			true if the state has been saved, false otherwise
 	 */
 	public boolean checkSaved() {
 		boolean temp = saved;
@@ -540,7 +543,7 @@ public class Grid extends JPanel{
 	 * Return a string which contains the name of the directory of the saved files. 
 	 * 
 	 * @return
-	 * 			the direcory's name
+	 * 			the save directory's name
 	 */	
 	public String getSaveDir(){
 		return saveDir;
@@ -554,7 +557,6 @@ public class Grid extends JPanel{
 	 * 				position of the files 	
 	 */
 	public void loadFromDisk(String path){
-		//System.out.println("this is " + path);
 		snapShot = new Vector<Cell>();
 		Scanner scanner;
 		int x = 0;
@@ -570,7 +572,6 @@ public class Grid extends JPanel{
 					y = scanner.nextInt();
 					Cell c = new GridCell(x,y);
 					snapShot.add(c);
-					//System.out.println("Added cell " + c);
 				}
 				i++;
 			}
@@ -581,7 +582,7 @@ public class Grid extends JPanel{
 	}
 	
 	/**
-	 * Saves the actual generation on the disk in the directory saveDir
+	 * Saves the actual generation to the disk in the directory saveDir
 	 * located in the game's working directory.
 	 */
 	public void saveToDisk() {

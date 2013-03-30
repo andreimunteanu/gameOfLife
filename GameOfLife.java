@@ -693,9 +693,14 @@ public class GameOfLife extends JFrame {
 			this.addActionListener(new ActionListener(){
 				@Override
 				public void actionPerformed(ActionEvent e) {
+					running = false;
+					try {
+						Thread.sleep(20);
+					} catch (InterruptedException e1) {
+						e1.printStackTrace();
+					}
 					pause.setEnabled(false);
 					start.setEnabled(true);
-					running = false;
 					while(!finish);
 
 					if(grid.isAddingFigure())

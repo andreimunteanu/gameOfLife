@@ -705,6 +705,7 @@ public class GameOfLife extends JFrame {
 					} catch (InterruptedException e1) {
 						e1.printStackTrace();
 					}
+					reset.setEnabled(false);
 					pause.setEnabled(false);
 					start.setEnabled(true);
 					while(!finish);

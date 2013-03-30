@@ -89,17 +89,17 @@ public class Grid extends JPanel{
 	private int generation = 0;
 
 	/*
-	 * 
+	 * checks if is the first time that the user is saving a file.
 	 */
 	private boolean firstSave = true;
 	
 	/*
-	 * 
+	 * checks if any file was saved.
 	 */
 	private boolean saved = true;
 	
 	/*
-	 * 
+	 * directory's name of the saved files.
 	 */
 	private final String saveDir = "saved";
 
